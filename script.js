@@ -2,14 +2,14 @@ const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 
 let w, h, groundY, active = false;
-let score = 0, speed = 7;
+let score = 0, speed = 6;
 let highScore = localStorage.getItem('hhero_best') || 0;
 let player, obstacles = [], clouds = [];
 
 function resize() {
     w = canvas.width = window.innerWidth;
     h = canvas.height = window.innerHeight;
-    groundY = h * 0.82;
+    groundY = h * 0.85;
 }
 window.onresize = resize;
 resize();
@@ -18,130 +18,150 @@ document.getElementById('best-ui').innerText = highScore;
 
 function startGame(job) {
     active = true;
-    document.getElementById('ui-layer').style.display = 'none';
+    score = 0; speed = 6; obstacles = [];
+    document.getElementById('start-menu').style.display = 'none';
+    document.getElementById('game-over').style.display = 'none';
     document.getElementById('hud').style.display = 'flex';
     
     player = {
-        x: w * 0.1, y: groundY - 90, dy: 0, w: 50, h: 90,
+        x: w * 0.15, y: groundY - 100, dy: 0, w: 45, h: 95,
         jumps: 2, duck: false,
         color: job === 'hvac' ? '#2ecc71' : '#e74c3c',
         tool: job === 'hvac' ? '🔧' : '🔨'
     };
 
     clouds = Array.from({length: 5}, () => ({
-        x: Math.random() * w, y: Math.random() * h * 0.3, s: 0.5 + Math.random(), r: 30 + Math.random() * 20
+        x: Math.random() * w, y: Math.random() * h * 0.3, s: 0.5 + Math.random()
     }));
 
-    obstacles = [];
     spawnObstacle();
     loop();
 }
 
 function spawnObstacle() {
     if (!active) return;
-    const isStar = Math.random() > 0.6;
-    const lastX = obstacles.length > 0 ? obstacles[obstacles.length-1].x : w;
-    const type = isStar ? 'star' : (Math.random() > 0.5 ? 'van' : 'banner');
-    
-    obstacles.push({ x: Math.max(w + 400, lastX + 500), type: type, passed: false });
-    setTimeout(spawnObstacle, 1500 + Math.random() * 1000);
+    const type = Math.random() > 0.4 ? 'van' : 'banner';
+    obstacles.push({ x: w + 200, type: type, passed: false });
+    setTimeout(spawnObstacle, 1500 + Math.random() * 1500);
 }
 
-function drawEnvironment() {
-    // Sky Gradient
-    let skyGrad = ctx.createLinearGradient(0, 0, 0, groundY);
-    skyGrad.addColorStop(0, '#87ceeb');
-    skyGrad.addColorStop(1, '#e0f7fa');
-    ctx.fillStyle = skyGrad; ctx.fillRect(0, 0, w, h);
+function drawPro(p) {
+    const dH = p.duck ? p.h * 0.6 : p.h;
+    const dY = p.duck ? groundY - dH : p.y;
+    
+    // Legs (Pants)
+    ctx.fillStyle = '#2c3e50'; 
+    ctx.fillRect(p.x + 5, dY + dH - 30, 15, 30); // Left Leg
+    ctx.fillRect(p.x + 25, dY + dH - 30, 15, 30); // Right Leg
+    
+    // Torso (Shirt)
+    ctx.fillStyle = '#ecf0f1'; // White Long Sleeve
+    ctx.fillRect(p.x, dY + 25, p.w, dH - 50);
+    
+    // Suspenders
+    ctx.fillStyle = '#34495e';
+    ctx.fillRect(p.x + 8, dY + 25, 6, dH - 55);
+    ctx.fillRect(p.x + 31, dY + 25, 6, dH - 55);
 
-    // Sun
-    ctx.fillStyle = '#f1c40f';
-    ctx.beginPath(); ctx.arc(w - 100, 100, 40, 0, 7); ctx.fill();
-    ctx.strokeStyle = 'rgba(241, 196, 15, 0.2)'; ctx.lineWidth = 10;
-    for(let i=0; i<8; i++){
-        ctx.beginPath(); ctx.moveTo(w-100,100);
-        ctx.lineTo(w-100+Math.cos(i)*70, 100+Math.sin(i)*70); ctx.stroke();
-    }
+    // Safety Vest (Over Shirt)
+    ctx.globalAlpha = 0.8;
+    ctx.fillStyle = p.color;
+    ctx.fillRect(p.x, dY + 35, p.w, 25);
+    ctx.globalAlpha = 1.0;
 
-    // Grass
-    ctx.fillStyle = '#27ae60'; ctx.fillRect(0, groundY, w, h - groundY);
-    ctx.fillStyle = '#2ecc71'; ctx.fillRect(0, groundY, w, 10);
+    // Head & Hard Hat
+    ctx.fillStyle = '#ffdbac';
+    ctx.fillRect(p.x + 12, dY + 5, 22, 22); // Face
+    ctx.fillStyle = '#f1c40f'; // Hard Hat
+    ctx.beginPath();
+    ctx.arc(p.x + 23, dY + 10, 15, Math.PI, 0);
+    ctx.fill();
+    ctx.fillRect(p.x + 5, dY + 8, p.w - 10, 4); // Brim
+
+    // Tool
+    ctx.font = '20px Arial';
+    ctx.fillText(p.tool, p.x + p.w - 5, dY + 45);
 }
 
 function drawVan(x) {
-    ctx.fillStyle = '#34495e'; ctx.fillRect(x, groundY - 70, 130, 60); // Body
-    ctx.fillStyle = '#1a1a1a'; ctx.fillRect(x + 90, groundY - 60, 30, 25); // Window
-    // Ladder
-    ctx.strokeStyle = '#95a5a6'; ctx.lineWidth = 4;
-    ctx.strokeRect(x+10, groundY-80, 100, 10);
+    // Body (Facing Left)
+    ctx.fillStyle = '#34495e';
+    ctx.fillRect(x, groundY - 65, 120, 55); // Main box
+    ctx.fillStyle = '#2c3e50';
+    ctx.fillRect(x, groundY - 60, 35, 30); // Cab (Front)
+    
+    // Front Windshield
+    ctx.fillStyle = '#81ecec';
+    ctx.fillRect(x + 5, groundY - 55, 25, 20);
+
+    // Headlight
+    ctx.fillStyle = '#fff9c4';
+    ctx.beginPath();
+    ctx.arc(x + 2, groundY - 25, 5, 0, 7);
+    ctx.fill();
+
     // Wheels
     ctx.fillStyle = '#000';
-    ctx.beginPath(); ctx.arc(x+25, groundY-5, 15, 0, 7); ctx.fill();
-    ctx.beginPath(); ctx.arc(x+105, groundY-5, 15, 0, 7); ctx.fill();
-    ctx.fillStyle = 'white'; ctx.font = 'bold 10px sans-serif'; ctx.fillText("FAKE PRO", x+15, groundY-35);
+    ctx.beginPath(); ctx.arc(x + 25, groundY - 5, 12, 0, 7); ctx.fill();
+    ctx.beginPath(); ctx.arc(x + 95, groundY - 5, 12, 0, 7); ctx.fill();
 }
 
-function drawPlayer(p) {
-    const curH = p.duck ? p.h * 0.5 : p.h;
-    const curY = p.duck ? groundY - curH : p.y;
-    
-    // Body / Vest
-    ctx.fillStyle = p.color; ctx.fillRect(p.x, curY + 25, p.w, curH - 25);
-    ctx.fillStyle = '#f1c40f'; ctx.fillRect(p.x, curY + 45, p.w, 5); // Reflective stripe
-    
-    // Head & Hard Hat
-    ctx.fillStyle = '#ffdbac'; ctx.fillRect(p.x + 10, curY, 30, 30);
-    ctx.fillStyle = '#f39c12'; // Hat
-    ctx.beginPath(); ctx.arc(p.x + 25, curY + 5, 20, Math.PI, 0); ctx.fill();
-    ctx.fillRect(p.x - 2, curY + 2, p.w + 4, 4); // Hat Brim
-    
-    // Tool icon
-    ctx.font = '24px Arial'; ctx.fillText(p.tool, p.x + p.w + 5, curY + 50);
+function drawBanner(x) {
+    ctx.fillStyle = '#795548'; // Post
+    ctx.fillRect(x + 50, groundY - 140, 6, 80);
+    ctx.fillStyle = '#c0392b'; // Red Ad
+    ctx.fillRect(x, groundY - 170, 110, 45);
+    ctx.strokeStyle = '#fff';
+    ctx.lineWidth = 2;
+    ctx.strokeRect(x, groundY - 170, 110, 45);
+    ctx.fillStyle = '#fff';
+    ctx.font = 'bold 12px sans-serif';
+    ctx.fillText("SCAM AD", x + 25, groundY - 143);
 }
 
 function loop() {
     if (!active) return;
-    drawEnvironment();
+    ctx.clearRect(0,0,w,h);
 
-    // Clouds
-    ctx.fillStyle = 'rgba(255,255,255,0.7)';
-    clouds.forEach(c => {
-        c.x -= c.s; if (c.x < -150) c.x = w + 150;
-        ctx.beginPath(); ctx.arc(c.x, c.y, c.r, 0, 7); ctx.arc(c.x+30, c.y-5, c.r*0.8, 0, 7); ctx.fill();
-    });
+    // Sky & Environment
+    ctx.fillStyle = '#87ceeb'; ctx.fillRect(0,0,w,h);
+    
+    // Sun
+    ctx.fillStyle = '#f1c40f'; ctx.beginPath(); ctx.arc(w-80, 80, 40, 0, 7); ctx.fill();
 
-    // Player Physics
+    // Ground
+    ctx.fillStyle = '#27ae60'; ctx.fillRect(0, groundY, w, h - groundY);
+    ctx.fillStyle = '#2ecc71'; ctx.fillRect(0, groundY, w, 5);
+
+    // Player
     player.dy += 0.8; player.y += player.dy;
     if (player.y > groundY - player.h) { player.y = groundY - player.h; player.dy = 0; player.jumps = 2; }
-    drawPlayer(player);
+    drawPro(player);
 
-    // Obstacles & Stars
+    // Obstacles
     obstacles.forEach((o, i) => {
         o.x -= speed;
-        if (o.type === 'star') {
-            ctx.fillStyle = '#f1c40f'; ctx.font = '30px Arial'; ctx.fillText("⭐", o.x, groundY - 110);
-            if (player.x < o.x + 30 && player.x + player.w > o.x && player.y < groundY - 70) {
-                obstacles.splice(i, 1); score++; speed += 0.1;
-            }
-        } else if (o.type === 'van') {
+        if (o.type === 'van') {
             drawVan(o.x);
-            if (player.x < o.x + 130 && player.x + player.w > o.x && (player.y + player.h) > groundY - 70 && !player.duck) die();
-        } else { // Banner
-            ctx.fillStyle = '#c0392b'; ctx.fillRect(o.x, groundY - 160, 140, 40);
-            ctx.fillStyle = 'white'; ctx.font = 'bold 12px sans-serif'; ctx.fillText("SCAM AD", o.x+35, groundY - 135);
-            if (player.x < o.x + 140 && player.x + player.w > o.x && !player.duck) die();
+            if (player.x < o.x + 110 && player.x + player.w > o.x && (player.y + player.h) > groundY - 60 && !player.duck) die();
+        } else {
+            drawBanner(o.x);
+            if (player.x < o.x + 110 && player.x + player.w > o.x && !player.duck) die();
         }
+        if (o.x < player.x && !o.passed) { o.passed = true; score++; speed += 0.1; }
         if (o.x < -200) obstacles.splice(i, 1);
     });
 
     document.getElementById('score-ui').innerText = score;
-    document.getElementById('speed-ui').innerText = (speed/7).toFixed(1);
     requestAnimationFrame(loop);
 }
 
 function die() {
     active = false;
-    if (score > highScore) localStorage.setItem('hhero_best', score);
+    if (score > highScore) {
+        highScore = score;
+        localStorage.setItem('hhero_best', highScore);
+    }
     document.getElementById('game-over').style.display = 'flex';
 }
 
