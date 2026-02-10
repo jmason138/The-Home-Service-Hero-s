@@ -11,16 +11,13 @@
         <div id="start-menu">
             <h1 id="game-title">HOME SERVICE HERO</h1>
             <div id="best-tag">🏆 TOP PRO SCORE: <span id="best-ui">0</span></div>
-            
             <div class="selector-container">
                 <button class="job-btn hvac" onclick="startGame('hvac')">
                     <div class="btn-top">HVAC ELITE</div>
-                    <div class="btn-sub">Quality Systems</div>
                     <span class="btn-icon">🔧</span>
                 </button>
                 <button class="job-btn roof" onclick="startGame('roof')">
                     <div class="btn-top">LYONS ROOFING</div>
-                    <div class="btn-sub">Master Shingle</div>
                     <span class="btn-icon">🔨</span>
                 </button>
             </div>
@@ -29,13 +26,12 @@
 
         <div id="hud" style="display: none;">
             <div class="stat-box">⭐ REFERRALS: <span id="score-ui">0</span></div>
-            <div class="stat-box">🚀 SPEED: <span id="speed-ui">1.0</span></div>
         </div>
 
         <div id="game-over" style="display: none;">
-            <h1 class="glow-text">JOB LOST!</h1>
-            <p>A low-bidder stole the customer's trust.</p>
-            <button class="retry-btn" onclick="location.reload()">RESUME HUSTLE</button>
+            <h1 class="glow-text">OUTBID!</h1>
+            <p>A low-quality competitor cut corners.</p>
+            <button class="retry-btn" onclick="location.reload()">RESTART JOB</button>
         </div>
     </div>
 
