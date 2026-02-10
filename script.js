@@ -1,187 +1,145 @@
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
+const menu = document.getElementById('menu');
 
-// --- GAME STATE ---
-let score = 0;
-let highScore = localStorage.getItem('heroHighScore') || 0;
-let gameActive = false;
-let isGold = false;
-let goldTimer = 0;
-let selectedJob = 'hvac'; 
-let gameSpeed = 7;
-let obstacles = [];
-let items = [];
-let spawnInterval;
-let itemInterval;
-
-// --- ASSET LOADING ---
-const images = {};
-const imageSources = {
-    hvac_normal: 'hvac_normal.png',
-    hvac_gold: 'hvac_gold.png',
-    roofer_normal: 'roofer_normal.png',
-    roofer_gold: 'roofer_gold.png',
-    van: 'van.png',
-    cone: 'obstacle_cone.png',
-    crack: 'obstacle_crack.png',
-    barricade: 'obstacle_barricade.png',
-    lowbid: 'obstacle_lowbid.png',
-    energy: 'energy_drink.png',
-    coffee: 'coffee.png',
-    bg: 'game_bg.jpg'
+// GAME ENGINE STATE
+let state = {
+    active: false,
+    score: 0,
+    highScore: localStorage.getItem('heroHS') || 0,
+    speed: 8,
+    isGold: false,
+    goldTimer: 0,
+    job: 'hvac'
 };
 
-// Load images and log success
-let loadedCount = 0;
-const totalImages = Object.keys(imageSources).length;
+document.getElementById('best-score').innerText = `RECORD: ${Math.floor(state.highScore)}`;
 
-Object.keys(imageSources).forEach(key => {
-    images[key] = new Image();
-    images[key].src = imageSources[key];
-    images[key].onload = () => {
-        loadedCount++;
-        if (loadedCount === totalImages) {
-            console.log("All Assets Loaded");
-        }
-    };
+// PRO ASSET LOADER
+const assets = {};
+const sources = {
+    bg: 'game_bg.jpg',
+    hvac_normal: 'hvac_normal.png', hvac_gold: 'hvac_gold.png',
+    roofer_normal: 'roofer_normal.png', roofer_gold: 'roofer_gold.png',
+    van: 'van.png', cone: 'obstacle_cone.png', crack: 'obstacle_crack.png',
+    barricade: 'obstacle_barricade.png', lowbid: 'obstacle_lowbid.png',
+    energy: 'energy_drink.png'
+};
+
+Object.keys(sources).forEach(key => {
+    assets[key] = new Image();
+    assets[key].src = sources[key];
 });
 
-// Update high score display on startup
-document.getElementById('high-score-display').innerText = `Best Score: ${Math.floor(highScore)}`;
+const player = { x: 620, y: 435, w: 100, h: 100, dy: 0, jump: 18, grav: 0.85, grounded: false };
+let obstacles = [];
+let items = [];
 
-const player = {
-    x: 600, y: 430, w: 100, h: 100,
-    dy: 0, jumpForce: 16, gravity: 0.8, grounded: false
-};
-
-// --- CORE FUNCTIONS ---
-function startGame(job) {
-    selectedJob = job;
-    gameActive = true;
-    score = 0;
-    gameSpeed = 7;
-    isGold = false;
+function initGame(selectedJob) {
+    state.job = selectedJob;
+    state.active = true;
+    state.score = 0;
+    state.speed = 8.5;
     obstacles = [];
     items = [];
+    menu.style.display = 'none';
     
-    document.getElementById('menu-overlay').style.display = 'none';
-    
-    if(spawnInterval) clearInterval(spawnInterval);
-    if(itemInterval) clearInterval(itemInterval);
-    
-    spawnInterval = setInterval(spawnObstacle, 1600);
-    itemInterval = setInterval(spawnItem, 5000);
-    
-    update();
+    requestAnimationFrame(gameLoop);
+    spawnLoop();
 }
 
-function spawnObstacle() {
-    if (!gameActive) return;
+function spawnLoop() {
+    if (!state.active) return;
+    
+    // Spawn Obstacles from the LEFT (since player faces left)
     const types = ['van', 'cone', 'crack', 'barricade', 'lowbid'];
     const type = types[Math.floor(Math.random() * types.length)];
-    let w = 60, h = 60;
-    if(type === 'van') { w = 150; h = 100; }
-    if(type === 'crack') { w = 80; h = 20; }
-    obstacles.push({ x: -200, y: 530 - h, w, h, type });
+    let w = 80, h = 80;
+    if(type === 'van') { w = 180; h = 110; }
+    if(type === 'crack') { w = 100; h = 25; }
+    
+    obstacles.push({ x: -200, y: 535 - h, w, h, type });
+
+    if(Math.random() > 0.8) {
+        items.push({ x: -100, y: 320, w: 50, h: 50, type: 'energy' });
+    }
+
+    setTimeout(spawnLoop, Math.max(700, 2200 - (state.speed * 60)));
 }
 
-function spawnItem() {
-    if (!gameActive) return;
-    const type = Math.random() > 0.5 ? 'energy' : 'coffee';
-    items.push({ x: -100, y: 350, w: 50, h: 50, type });
-}
-
-function update() {
-    if (!gameActive) return;
-
-    // Movement & Speed
-    player.dy += player.gravity;
+function gameLoop() {
+    if (!state.active) return;
+    
+    // Physics & Difficulty
+    player.dy += player.grav;
     player.y += player.dy;
-    gameSpeed += 0.001;
+    state.speed += 0.002;
 
-    // Ground Logic
-    if (player.y > 430) {
-        player.y = 430; player.dy = 0; player.grounded = true;
+    if (player.y > 435) {
+        player.y = 435; player.dy = 0; player.grounded = true;
     }
 
-    // Power-up Timer
-    if (isGold) {
-        goldTimer--;
-        if (goldTimer <= 0) isGold = false;
+    if (state.isGold) {
+        state.goldTimer--;
+        if (state.goldTimer <= 0) state.isGold = false;
     }
 
-    // Collision with Obstacles
-    obstacles.forEach((obs, index) => {
-        obs.x += gameSpeed;
+    // Collision & Movement
+    obstacles.forEach((obs, i) => {
+        obs.x += state.speed;
         if (checkCollision(player, obs)) {
-            if (!isGold) gameOver();
-            else obstacles.splice(index, 1);
+            state.isGold ? obstacles.splice(i, 1) : endGame();
         }
-        if (obs.x > canvas.width) obstacles.splice(index, 1);
+        if (obs.x > 850) obstacles.splice(i, 1);
     });
 
-    // Collision with Items
-    items.forEach((item, index) => {
-        item.x += gameSpeed;
+    items.forEach((item, i) => {
+        item.x += state.speed;
         if (checkCollision(player, item)) {
-            if (item.type === 'energy') {
-                isGold = true;
-                goldTimer = 300; 
-            } else {
-                score += 50;
-            }
-            items.splice(index, 1);
+            state.isGold = true; state.goldTimer = 350; items.splice(i, 1);
         }
-        if (item.x > canvas.width) items.splice(index, 1);
     });
 
-    score += 0.1;
+    state.score += 0.1;
     draw();
-    requestAnimationFrame(update);
+    requestAnimationFrame(gameLoop);
 }
 
 function checkCollision(p, o) {
-    return p.x < o.x + o.w && p.x + p.w > o.x && p.y < o.y + o.h && p.y + p.h > o.y;
+    const buffer = 20; // Pro padding for fair gameplay
+    return p.x + buffer < o.x + o.w && p.x + p.w - buffer > o.x &&
+           p.y + buffer < o.y + o.h && p.y + p.h - buffer > o.y;
 }
 
 function draw() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.clearRect(0, 0, 800, 600);
+    if(assets.bg.complete) ctx.drawImage(assets.bg, 0, 0, 800, 600);
     
-    // Draw Background
-    ctx.drawImage(images.bg, 0, 0, canvas.width, canvas.height);
+    obstacles.forEach(o => {
+        if(assets[o.type].complete) ctx.drawImage(assets[o.type], o.x, o.y, o.w, o.h);
+    });
+    
+    items.forEach(it => {
+        if(assets.energy.complete) ctx.drawImage(assets.energy, it.x, it.y, it.w, it.h);
+    });
 
-    // Draw Items & Obstacles
-    items.forEach(item => ctx.drawImage(images[item.type], item.x, item.y, item.w, item.h));
-    obstacles.forEach(obs => ctx.drawImage(images[obs.type], obs.x, obs.y, obs.w, obs.h));
+    const charKey = `${state.job}_${state.isGold ? 'gold' : 'normal'}`;
+    if(assets[charKey].complete) ctx.drawImage(assets[charKey], player.x, player.y, player.w, player.h);
 
-    // Draw Player
-    let charKey = `${selectedJob}_${isGold ? 'gold' : 'normal'}`;
-    ctx.drawImage(images[charKey], player.x, player.y, player.w, player.h);
-
-    // Score UI
     ctx.fillStyle = "white";
-    ctx.font = "bold 24px Arial";
-    ctx.fillText(`Score: ${Math.floor(score)}`, 20, 40);
-    if (isGold) {
-        ctx.fillStyle = "#ffcc00";
-        ctx.fillText(`GOLD MODE: ${Math.ceil(goldTimer/60)}s`, 20, 70);
-    }
+    ctx.font = "900 24px Arial";
+    ctx.fillText(`DISTANCE: ${Math.floor(state.score)}m`, 30, 50);
 }
 
-function gameOver() {
-    gameActive = false;
-    if (score > highScore) {
-        localStorage.setItem('heroHighScore', score);
-        alert(`NEW HIGH SCORE: ${Math.floor(score)}!`);
-    } else {
-        alert(`GAME OVER! Score: ${Math.floor(score)}`);
-    }
-    location.reload(); 
+function endGame() {
+    state.active = false;
+    if (state.score > state.highScore) localStorage.setItem('heroHS', state.score);
+    alert(`GAME OVER\nSCORE: ${Math.floor(state.score)}`);
+    location.reload();
 }
 
 window.addEventListener('keydown', (e) => {
     if (e.code === 'Space' && player.grounded) {
-        player.dy = -player.jumpForce;
-        player.grounded = false;
+        player.dy = -player.jump; player.grounded = false;
     }
 });
