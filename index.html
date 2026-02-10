@@ -3,62 +3,101 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>HOME SERVICE HERO: MOBILE PRO</title>
+    <title>HOME SERVICE HERO: PRO MOBILE</title>
     <style>
         :root { --gold: #ffcc00; --red: #ff3333; }
-        body { margin: 0; background: #000; color: white; font-family: 'Arial Black', sans-serif; overflow: hidden; touch-action: manipulation; }
-        #game-viewport { position: relative; width: 100vw; height: 100vh; max-width: 800px; max-height: 600px; margin: auto; background: #111; overflow: hidden; }
-        canvas { width: 100%; height: 100%; display: block; }
+        * { box-sizing: border-box; -webkit-touch-callout: none; -webkit-user-select: none; }
         
-        #menu { position: absolute; inset: 0; background: url('menu_bg.jpg.jpg') no-repeat center center; background-size: cover; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; z-index: 100; padding-bottom: 60px; }
-        #win-screen, #lose-screen { position: absolute; inset: 0; background: rgba(0,0,0,0.9); display: none; flex-direction: column; justify-content: center; align-items: center; z-index: 101; text-align: center; }
-        
-        button { padding: 15px 30px; font-size: 1.2rem; font-weight: 900; border: 3px solid var(--gold); background: rgba(0,0,0,0.8); color: var(--gold); margin: 10px; text-transform: uppercase; }
-        
-        .hud { position: absolute; top: 10px; width: 100%; display: flex; justify-content: space-around; font-size: 1.1rem; z-index: 10; pointer-events: none; text-shadow: 2px 2px #000; }
+        body { 
+            margin: 0; background: #000; color: white; 
+            font-family: 'Arial Black', sans-serif; overflow: hidden; 
+            display: flex; justify-content: center; align-items: center; height: 100vh;
+        }
 
-        /* VISIBLE MOBILE CONTROLS */
-        .mobile-btn { position: absolute; bottom: 20px; width: 80px; height: 80px; background: rgba(255, 204, 0, 0.3); border: 2px solid var(--gold); border-radius: 50%; display: flex; justify-content: center; align-items: center; z-index: 105; font-size: 0.8rem; color: #fff; font-weight: bold; pointer-events: auto; }
-        #jump-btn { left: 20px; }
-        #duck-btn { right: 20px; }
+        #game-viewport { 
+            position: relative; width: 100vw; height: 100vh; 
+            max-width: 800px; max-height: 450px; /* Adjusted for landscape phones */
+            background: #111; overflow: hidden; border: 2px solid #333;
+        }
+
+        canvas { width: 100%; height: 100%; object-fit: contain; }
+        
+        #menu { 
+            position: absolute; inset: 0; 
+            background: #000 url('menu_bg.jpg.jpg') no-repeat center center; 
+            background-size: contain; /* Ensures the whole image shows */
+            display: flex; flex-direction: column; justify-content: flex-end; 
+            align-items: center; z-index: 100; padding-bottom: 20px;
+        }
+
+        #win-screen, #lose-screen { 
+            position: absolute; inset: 0; background: rgba(0,0,0,0.9); 
+            display: none; flex-direction: column; justify-content: center; 
+            align-items: center; z-index: 101; text-align: center; 
+        }
+        
+        button { 
+            padding: 12px 24px; font-size: 1rem; font-weight: 900; 
+            border: 3px solid var(--gold); background: rgba(0,0,0,0.8); 
+            color: var(--gold); margin: 5px; text-transform: uppercase;
+        }
+
+        .hud { 
+            position: absolute; top: 10px; width: 100%; 
+            display: flex; justify-content: space-around; 
+            font-size: 0.9rem; z-index: 10; pointer-events: none;
+        }
+
+        /* MOBILE CONTROLS */
+        .mobile-btn { 
+            position: absolute; bottom: 15px; width: 70px; height: 70px; 
+            background: rgba(255, 204, 0, 0.4); border: 2px solid var(--gold); 
+            border-radius: 50%; display: flex; justify-content: center; 
+            align-items: center; z-index: 105; font-size: 0.7rem; color: #fff; 
+        }
+        #jump-btn { left: 15px; }
+        #duck-btn { right: 15px; }
     </style>
 </head>
 <body>
 
 <div id="game-viewport">
     <div id="menu">
-        <button onclick="initGame('hvac')">HVAC TECH</button>
-        <button onclick="initGame('roofer')">ROOFER</button>
+        <div style="display:flex;">
+            <button onclick="initGame('hvac')">HVAC</button>
+            <button onclick="initGame('roofer')">ROOF</button>
+        </div>
     </div>
 
     <div id="win-screen">
-        <h1 id="win-title">INSTALL COMPLETE!</h1>
-        <p>Quality service provided.</p>
-        <button onclick="location.reload()">NEXT CUSTOMER</button>
+        <h1>JOB DONE!</h1>
+        <button onclick="location.reload()">RESTART</button>
     </div>
 
     <div id="lose-screen">
-        <h1 style="color:var(--red)">BID LOST!</h1>
-        <p>A low-bidder ruined the job. Try again!</p>
-        <button onclick="location.reload()">RE-BID</button>
+        <h1 style="color:var(--red)">BID LOST</h1>
+        <button onclick="location.reload()">TRY AGAIN</button>
     </div>
 
     <div id="jump-btn" class="mobile-btn">JUMP</div>
     <div id="duck-btn" class="mobile-btn">DUCK</div>
 
     <div class="hud" id="hud" style="display:none;">
-        <div>JOBS: <span id="count">0</span>/20</div>
-        <div id="status" style="color:var(--gold)"></div>
+        <div>PROGRESS: <span id="count">0</span>/20</div>
+        <div id="status"></div>
     </div>
 
-    <canvas id="gameCanvas" width="800" height="600"></canvas>
+    <canvas id="gameCanvas" width="800" height="450"></canvas>
 </div>
 
 <script>
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
     
-    let state = { active: false, job: 'hvac', challenges: 0, speed: 7, isGold: false, goldTimer: 0, houseX: 1200, houseSpawned: false };
+    // GROUND LEVEL (Fixed for all heights)
+    const GROUND_Y = 350; 
+
+    let state = { active: false, job: 'hvac', challenges: 0, speed: 7, isGold: false, goldTimer: 0, houseX: 1200 };
     const assets = {};
     const sources = {
         bg: 'game_bg.jpg',
@@ -67,12 +106,12 @@
         van: 'van.png', cone: 'obstacle_cone.png', crack: 'obstacle_crack.png',
         barricade: 'obstacle_barricade.png', lowbid: 'obstacle_lowbid.png',
         energy: 'energy_drink.png', coffee: 'coffee.png', scam: 'scam_ad.png',
-        house: 'menu_bg.jpg.jpg' // Using your uploaded image as the house goal
+        house: 'menu_bg.jpg.jpg'
     };
 
     Object.keys(sources).forEach(key => { assets[key] = new Image(); assets[key].src = sources[key]; });
 
-    const player = { x: 50, y: 435, w: 100, h: 100, dy: 0, jump: 18, grav: 0.8, grounded: false, jumpsLeft: 2, isDucking: false };
+    const player = { x: 50, y: GROUND_Y, w: 80, h: 80, dy: 0, jump: 16, grav: 0.7, jumpsLeft: 2, isDucking: false };
     let obstacles = [];
     let items = [];
 
@@ -86,21 +125,23 @@
     function spawnLoop() {
         if (!state.active || state.challenges >= 20) return;
         const rand = Math.random();
-        if(rand > 0.7) {
-            obstacles.push({ x: 900, y: 385, w: 220, h: 110, type: 'scam' });
+        if(rand > 0.75) {
+            // SCAM AD (Duck height)
+            obstacles.push({ x: 850, y: GROUND_Y - 60, w: 180, h: 80, type: 'scam' });
         } else {
+            // GROUND STUFF
             const types = ['van', 'cone', 'crack', 'barricade', 'lowbid'];
             const type = types[Math.floor(Math.random() * types.length)];
-            let w = 80, h = 80, y = 455;
-            if(type === 'van') { w = 230; h = 150; y = 385; }
-            if(type === 'crack') { w = 110; h = 30; y = 505; }
-            obstacles.push({ x: 900, y: y, w: w, h: h, type: type });
+            let w = 60, h = 60, y = GROUND_Y + 20;
+            if(type === 'van') { w = 200; h = 120; y = GROUND_Y - 40; }
+            if(type === 'crack') { w = 90; h = 20; y = GROUND_Y + 60; }
+            obstacles.push({ x: 850, y: y, w: w, h: h, type: type });
         }
-        if(Math.random() > 0.6) items.push({ x: 950, y: 300, w: 50, h: 50, type: Math.random() > 0.5 ? 'energy' : 'coffee' });
+        if(Math.random() > 0.6) items.push({ x: 900, y: GROUND_Y - 100, w: 40, h: 40, type: Math.random() > 0.5 ? 'energy' : 'coffee' });
         
         state.challenges++;
         document.getElementById('count').innerText = state.challenges;
-        setTimeout(spawnLoop, 1500 + Math.random() * 800);
+        setTimeout(spawnLoop, 1600 + Math.random() * 800);
     }
 
     function gameLoop() {
@@ -112,7 +153,8 @@
     function update() {
         player.dy += player.grav;
         player.y += player.dy;
-        if (player.y > 435) { player.y = 435; player.dy = 0; player.grounded = true; player.jumpsLeft = 2; }
+        if (player.y > GROUND_Y) { player.y = GROUND_Y; player.dy = 0; player.jumpsLeft = 2; }
+
         if(state.isGold && --state.goldTimer <= 0) state.isGold = false;
 
         obstacles.forEach((obs, i) => {
@@ -125,15 +167,13 @@
 
         items.forEach((it, i) => {
             it.x -= state.speed;
-            if (checkCollision(player, it)) { state.isGold = true; state.goldTimer = 350; items.splice(i, 1); }
+            if (checkCollision(player, it)) { state.isGold = true; state.goldTimer = 300; items.splice(i, 1); }
         });
 
-        // HOUSE GOAL LOGIC
         if (state.challenges >= 20) {
-            state.speed = 5; // Slow down for the finale
+            state.speed = 5;
             state.houseX -= state.speed;
-            // When player hits the house
-            if (player.x + player.w > state.houseX + 150) { 
+            if (player.x + player.w > state.houseX + 100) { 
                 state.active = false; 
                 document.getElementById('win-screen').style.display = 'flex'; 
             }
@@ -141,20 +181,16 @@
     }
 
     function draw() {
-        ctx.clearRect(0, 0, 800, 600);
-        if(assets.bg.complete) ctx.drawImage(assets.bg, 0, 0, 800, 600);
+        ctx.clearRect(0, 0, 800, 450);
+        if(assets.bg.complete) ctx.drawImage(assets.bg, 0, 0, 800, 450);
 
-        // DRAW HOUSE
         if (state.challenges >= 20 && assets.house.complete) {
-            ctx.drawImage(assets.house, state.houseX, 100, 450, 450);
-            ctx.fillStyle = "white";
-            ctx.font = "30px Arial Black";
-            ctx.fillText("DESTINATION REACHED!", state.houseX + 50, 80);
+            ctx.drawImage(assets.house, state.houseX, 50, 400, 400);
         }
 
         const charKey = `${state.job}_${state.isGold ? 'gold' : 'normal'}`;
         let dH = player.h, dY = player.y;
-        if(player.isDucking && player.grounded) { dH = player.h * 0.4; dY = player.y + (player.h * 0.6); }
+        if(player.isDucking) { dH = player.h * 0.5; dY = player.y + (player.h * 0.5); }
 
         if(assets[charKey]?.complete) ctx.drawImage(assets[charKey], player.x, dY, player.w, dH);
         obstacles.forEach(o => { if(assets[o.type]?.complete) ctx.drawImage(assets[o.type], o.x, o.y, o.w, o.h); });
@@ -162,15 +198,15 @@
     }
 
     function checkCollision(p, o) {
-        let pH = p.isDucking && p.grounded ? p.h * 0.4 : p.h;
-        let pY = p.isDucking && p.grounded ? p.y + (p.h * 0.6) : p.y;
-        return p.x + 20 < o.x + o.w && p.x + p.w - 20 > o.x && pY + 20 < o.y + o.h && pY + pH - 20 > o.y;
+        let pH = p.isDucking ? p.h * 0.5 : p.h;
+        let pY = p.isDucking ? p.y + (p.h * 0.5) : p.y;
+        return p.x + 15 < o.x + o.w && p.x + p.w - 15 > o.x && pY + 15 < o.y + o.h && pY + pH - 15 > o.y;
     }
 
-    // MOBILE TOUCH HANDLERS
+    // TOUCH HANDLERS
     document.getElementById('jump-btn').addEventListener('touchstart', (e) => {
         e.preventDefault();
-        if (player.jumpsLeft > 0) { player.dy = -player.jump; player.jumpsLeft--; player.grounded = false; player.isDucking = false; }
+        if (player.jumpsLeft > 0) { player.dy = -player.jump; player.jumpsLeft--; player.isDucking = false; }
     });
     document.getElementById('duck-btn').addEventListener('touchstart', (e) => {
         e.preventDefault(); player.isDucking = true;
@@ -181,7 +217,7 @@
 
     // KEYBOARD FALLBACK
     window.addEventListener('keydown', (e) => {
-        if (e.code === 'Space' && player.jumpsLeft > 0) { player.dy = -player.jump; player.jumpsLeft--; player.grounded = false; }
+        if (e.code === 'Space' && player.jumpsLeft > 0) { player.dy = -player.jump; player.jumpsLeft--; }
         if (e.code === 'KeyS' || e.code === 'ArrowDown') player.isDucking = true;
     });
     window.addEventListener('keyup', (e) => {
