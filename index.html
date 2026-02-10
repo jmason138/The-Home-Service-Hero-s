@@ -16,33 +16,27 @@
 
         canvas { width: 100%; height: 100%; display: block; }
         
-        /* Menu Image Fix */
-        #menu-bg-img { 
-            position: absolute; 
-            top: 0; left: 0; 
-            width: 100%; height: 100%; 
-            object-fit: contain; /* Shows your full title screen without cropping */
-            z-index: 1; 
-            background: #000; 
-        }
+        #menu-bg-img { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; z-index: 1; background: #000; }
 
-        #menu { 
-            position: absolute; inset: 0; z-index: 2; 
-            display: flex; flex-direction: column; justify-content: flex-end; 
-            align-items: center; padding: 30px;
+        #menu { position: absolute; inset: 0; z-index: 2; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; padding: 30px; }
+
+        /* Sound Toggle Button */
+        #sound-toggle {
+            position: absolute; top: 20px; right: 20px; z-index: 105;
+            background: rgba(0,0,0,0.7); border: 2px solid var(--gold);
+            color: var(--gold); border-radius: 50%; width: 50px; height: 50px;
+            cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 1.5rem;
         }
 
         .instruction-box { 
-            position: relative; z-index: 3;
             background: rgba(0,0,0,0.85); border: 2px solid var(--gold); border-radius: 15px;
             padding: 12px; color: white; text-align: center; max-width: 500px; margin-bottom: 15px;
         }
         .instruction-box h3 { color: var(--gold); margin: 0 0 5px 0; font-size: 0.9rem; text-transform: uppercase; }
         .instruction-box p { margin: 3px 0; font-size: 0.8rem; font-family: sans-serif; }
 
-        .select-header { position: relative; z-index: 3; color: white; text-shadow: 2px 2px 4px #000; margin-bottom: 10px; font-size: 1.1rem; text-transform: uppercase; }
-        
-        .btn-container { position: relative; z-index: 3; display: flex; gap: 20px; margin-bottom: 15px; }
+        .select-header { color: white; text-shadow: 2px 2px 4px #000; margin-bottom: 10px; font-size: 1.1rem; text-transform: uppercase; }
+        .btn-container { display: flex; gap: 20px; margin-bottom: 15px; }
         
         .img-btn { 
             background: white; border: 4px solid var(--gold); border-radius: 12px;
@@ -52,7 +46,6 @@
         .img-btn:active { transform: scale(0.95); }
         .img-btn img { max-width: 100%; max-height: 100%; object-fit: contain; }
 
-        /* HUD & Game Screens */
         #win-screen, #lose-screen { position: absolute; inset: 0; z-index: 101; display: none; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 5%; }
         #win-screen { background: white; color: #333; }
         #lose-screen { background: rgba(0,0,0,0.9); color: #ff3333; }
@@ -62,6 +55,8 @@
 <body>
 
 <div id="game-viewport">
+    <button id="sound-toggle" onclick="toggleSound()">🔊</button>
+    
     <img id="menu-bg-img" src="menu_bg.jpg" alt="Title Background">
 
     <div id="menu">
@@ -73,12 +68,8 @@
 
         <div class="select-header">SELECT YOUR HOME SERVICE PRO</div>
         <div class="btn-container">
-            <button class="img-btn" onclick="initGame('hvac')">
-                <img src="aQuality-logo.png" alt="A Quality HVAC">
-            </button>
-            <button class="img-btn" onclick="initGame('roofer')">
-                <img src="lyons-horz-logo.png" alt="Lyons Roofing">
-            </button>
+            <button class="img-btn" onclick="initGame('hvac')"><img src="aQuality-logo.png"></button>
+            <button class="img-btn" onclick="initGame('roofer')"><img src="lyons-horz-logo.png"></button>
         </div>
     </div>
 
@@ -102,7 +93,8 @@
     const ctx = canvas.getContext('2d');
     const GROUND_Y = 380; 
 
-    // Audio Initialization
+    // --- SOUND SYSTEM ---
+    let soundEnabled = true;
     const sounds = {
         jump: new Audio('jump.wav'),
         duck: new Audio('duck.wav'),
@@ -112,7 +104,20 @@
     sounds.bgm.loop = true;
     sounds.bgm.volume = 0.4;
 
+    function toggleSound() {
+        soundEnabled = !soundEnabled;
+        const btn = document.getElementById('sound-toggle');
+        btn.innerText = soundEnabled ? '🔊' : '🔇';
+        
+        if (!soundEnabled) {
+            sounds.bgm.pause();
+        } else if (state.active) {
+            sounds.bgm.play().catch(() => {});
+        }
+    }
+
     function playSfx(name) {
+        if (!soundEnabled) return;
         sounds[name].currentTime = 0;
         sounds[name].play().catch(() => {}); 
     }
@@ -123,11 +128,10 @@
         bg: 'game_bg.jpg', hvac_normal: 'hvac_normal.png', roofer_normal: 'roofer_normal.png',
         van: 'van.png', cone: 'obstacle_cone.png', crack: 'obstacle_crack.png',
         barricade: 'obstacle_barricade.png', lowbid: 'obstacle_lowbid.png',
-        scam: 'scam_ad.png', house: 'menu_bg.jpg', // Updated here too
+        scam: 'scam_ad.png', house: 'menu_bg.jpg',
         logo_hvac: 'aQuality-logo.png', logo_roof: 'lyons-horz-logo.png'
     };
 
-    // Preload Images
     Object.keys(sources).forEach(key => { assets[key] = new Image(); assets[key].src = sources[key]; });
 
     const player = { x: 80, y: GROUND_Y - 85, w: 85, h: 85, dy: 0, jump: 17, grav: 0.8, jumpsLeft: 2, isDucking: false };
@@ -135,7 +139,7 @@
 
     function initGame(job) {
         state.job = job; state.active = true;
-        sounds.bgm.play().catch(() => {});
+        if (soundEnabled) sounds.bgm.play().catch(() => {});
         document.getElementById('menu').style.display = 'none';
         document.getElementById('menu-bg-img').style.display = 'none';
         document.querySelectorAll('.tap-zone').forEach(z => z.style.display = 'block');
@@ -212,7 +216,6 @@
         return p.x + 25 < o.x + o.w && p.x + p.w - 25 > o.x && p.y + 20 < o.y + o.h && p.y + pH - 20 > o.y;
     }
 
-    // Input Logic
     window.addEventListener('keydown', (e) => {
         if ((e.code === 'Space' || e.code === 'ArrowUp') && player.jumpsLeft > 0) { player.dy = -player.jump; player.jumpsLeft--; playSfx('jump'); }
         if (e.code === 'ArrowDown' && !player.isDucking) { player.isDucking = true; playSfx('duck'); }
