@@ -11,35 +11,38 @@
     <div id="ui-layer">
         <div id="start-menu">
             <h1 class="hero-title">HOME SERVICE <span class="gold">HERO</span></h1>
-            <div id="best-tag">🏆 ALL-TIME PRO SCORE: <span id="best-ui">0</span></div>
-            
+            <div id="best-tag">🏆 TOP PRO RATING: <span id="best-ui">0</span></div>
             <div class="selector-container">
                 <div class="card" onclick="startGame('hvac')">
                     <div class="card-inner hvac">
                         <h3>HVAC ELITE</h3>
-                        <p>Maintenance Mission</p>
                         <span class="icon">🔧</span>
                     </div>
                 </div>
                 <div class="card" onclick="startGame('roof')">
                     <div class="card-inner roof">
                         <h3>LYONS ROOFING</h3>
-                        <p>Installation Mission</p>
                         <span class="icon">🔨</span>
                     </div>
                 </div>
             </div>
-            <p class="hint">SPACE to Leap | DOWN to Duck</p>
         </div>
 
         <div id="hud" style="display: none;">
-            <div class="stat">⭐ REFERRALS: <span id="score-ui">0</span></div>
+            <div class="stat">⭐ 5-STAR REVIEWS: <span id="score-ui">0</span></div>
+            <div class="stat">📍 DISTANCE TO JOB: <span id="goal-ui">20</span></div>
         </div>
 
         <div id="game-over" style="display: none;">
             <h1 class="fail-text">OUTBID!</h1>
-            <p>Quality was high, but the scammer was faster.</p>
             <button class="retry-btn" onclick="location.reload()">RE-DEPLOY PRO</button>
+        </div>
+
+        <div id="victory-screen" style="display: none;">
+            <h1 class="victory-text">JOB COMPLETED!</h1>
+            <h2 id="level-up-text">LEVEL 2 UNLOCKED</h2>
+            <p>The customer is thrilled with your professional work.</p>
+            <button class="next-btn" onclick="nextLevel()">START NEXT JOB</button>
         </div>
     </div>
     <canvas id="gameCanvas"></canvas>
