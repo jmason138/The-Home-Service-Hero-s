@@ -3,18 +3,30 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HOME SERVICE HERO: FULL CAMPAIGN</title>
+    <title>HOME SERVICE HERO: LEVEL 1</title>
     <style>
         :root { --gold: #ffcc00; --cyan: #00f2ff; --red: #ff3333; }
         body { margin: 0; background: #000; display: flex; justify-content: center; align-items: center; height: 100vh; color: white; font-family: 'Arial Black', sans-serif; overflow: hidden; }
         #game-viewport { position: relative; width: 800px; height: 600px; border: 4px solid #333; background: #111; overflow: hidden; }
-        #menu, #win-screen, #lose-screen { position: absolute; inset: 0; background: rgba(0,0,0,0.95); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 100; text-align: center; padding: 40px; }
-        #win-screen, #lose-screen { display: none; }
-        h1 { font-size: 3rem; margin: 0; color: var(--gold); }
-        .message { font-size: 1.1rem; line-height: 1.4; margin: 20px 0; color: #ddd; max-width: 600px; }
-        button { padding: 15px 30px; font-size: 1.1rem; font-weight: 900; cursor: pointer; border: 3px solid var(--gold); background: transparent; color: var(--gold); text-transform: uppercase; margin: 10px; transition: 0.2s; }
+        
+        /* Menu uses your new menu_bg.jpg */
+        #menu { 
+            position: absolute; inset: 0; 
+            background: url('menu_bg.jpg') no-repeat center center; 
+            background-size: cover;
+            display: flex; flex-direction: column; justify-content: flex-end; align-items: center; 
+            z-index: 100; text-align: center; padding-bottom: 50px;
+        }
+
+        #win-screen, #lose-screen { position: absolute; inset: 0; background: rgba(0,0,0,0.95); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 101; text-align: center; padding: 40px; display: none; }
+        
+        h1 { font-size: 3rem; margin: 0; color: var(--gold); text-shadow: 2px 2px 4px #000; }
+        .message { font-size: 1.1rem; line-height: 1.4; margin: 20px 0; color: #fff; max-width: 600px; text-shadow: 1px 1px 2px #000; }
+        
+        button { padding: 15px 30px; font-size: 1.1rem; font-weight: 900; cursor: pointer; border: 3px solid var(--gold); background: rgba(0,0,0,0.7); color: var(--gold); text-transform: uppercase; margin: 10px; transition: 0.2s; }
         button:hover { background: var(--gold); color: #000; }
-        .hud { position: absolute; top: 20px; width: 100%; display: flex; justify-content: space-around; font-size: 1.2rem; pointer-events: none; z-index: 10; }
+
+        .hud { position: absolute; top: 20px; width: 100%; display: flex; justify-content: space-around; font-size: 1.2rem; pointer-events: none; z-index: 10; text-shadow: 1px 1px 2px #000; }
         #status { color: var(--gold); font-weight: bold; }
     </style>
 </head>
@@ -22,14 +34,25 @@
 
 <div id="game-viewport">
     <div id="menu">
-        <h1>HOME SERVICE HERO</h1>
-        <p class="message">The Full Trade Challenge: Dodge Low-Bidders & Scams.<br>[SPACE] to Double Jump | [S] to Duck | Collect Drinks for Gold Mode</p>
-        <button onclick="initGame('hvac')">HVAC TECH</button>
-        <button onclick="initGame('roofer')">ROOFER</button>
+        <div style="background: rgba(0,0,0,0.5); padding: 20px; border-radius: 15px;">
+            <h1>SELECT YOUR PRO</h1>
+            <p class="message">[SPACE] to Double Jump | [S] or [DOWN] to Duck</p>
+            <button onclick="initGame('hvac')">HVAC TECH</button>
+            <button onclick="initGame('roofer')">ROOFER</button>
+        </div>
     </div>
 
-    <div id="win-screen"><h1>INSTALL COMPLETE!</h1><button onclick="location.reload()">NEXT CUSTOMER</button></div>
-    <div id="lose-screen"><h1 style="color:var(--red)">BID LOST!</h1><p class="message">A competitor took the job. Quality was sacrificed.</p><button onclick="location.reload()">RE-BID</button></div>
+    <div id="win-screen">
+        <h1>INSTALL COMPLETE!</h1>
+        <p class="message" id="win-sub">High-quality service saves the day.</p>
+        <button onclick="location.reload()">NEXT MISSION</button>
+    </div>
+
+    <div id="lose-screen">
+        <h1 style="color:var(--red)">BID LOST!</h1>
+        <p class="message">The customer fell for poor quality service. Re-bid the job!</p>
+        <button onclick="location.reload()">START MISSION</button>
+    </div>
 
     <div class="hud" id="hud" style="display:none;">
         <div>CHALLENGES: <span id="count">0</span> / 20</div>
@@ -74,22 +97,19 @@
         
         const rand = Math.random();
         if(rand > 0.75) {
-            // SCAM AD (DUCK)
             obstacles.push({ x: 850, y: 340, w: 190, h: 110, type: 'scam' });
         } else {
-            // GROUND OBSTACLES (JUMP)
             const types = ['van', 'cone', 'crack', 'barricade', 'lowbid'];
             const type = types[Math.floor(Math.random() * types.length)];
             let w = 80, h = 80, y = 455;
             
-            if(type === 'van') { w = 210; h = 130; y = 405; }
+            if(type === 'van') { w = 220; h = 140; y = 395; } // Big Van Scale
             if(type === 'crack') { w = 110; h = 30; y = 505; }
             if(type === 'barricade') { w = 100; h = 90; y = 445; }
 
             obstacles.push({ x: 850, y: y, w: w, h: h, type: type });
         }
 
-        // Spawn Items
         if(Math.random() > 0.6) {
             const itType = Math.random() > 0.5 ? 'energy' : 'coffee';
             items.push({ x: 900, y: 300, w: 50, h: 50, type: itType });
@@ -110,16 +130,11 @@
         player.dy += player.grav;
         player.y += player.dy;
 
-        if (player.y > 435) { 
-            player.y = 435; player.dy = 0; player.grounded = true; player.jumpsLeft = 2; 
-        }
+        if (player.y > 435) { player.y = 435; player.dy = 0; player.grounded = true; player.jumpsLeft = 2; }
 
         if(state.isGold) {
             state.goldTimer--;
-            if(state.goldTimer <= 0) {
-                state.isGold = false;
-                document.getElementById('status').innerText = "";
-            }
+            if(state.goldTimer <= 0) { state.isGold = false; document.getElementById('status').innerText = ""; }
         }
 
         obstacles.forEach((obs, i) => {
@@ -135,7 +150,7 @@
             it.x -= state.speed;
             if (checkCollision(player, it)) {
                 state.isGold = true; state.goldTimer = 350;
-                document.getElementById('status').innerText = "POWERED UP!";
+                document.getElementById('status').innerText = "GOLD MODE!";
                 items.splice(i, 1);
             }
         });
@@ -159,7 +174,6 @@
         if(player.isDucking && player.grounded) { dH = player.h * 0.4; dY = player.y + (player.h * 0.6); }
 
         if(assets[charKey] && assets[charKey].complete) ctx.drawImage(assets[charKey], player.x, dY, player.w, dH);
-
         obstacles.forEach(o => { if(assets[o.type].complete) ctx.drawImage(assets[o.type], o.x, o.y, o.w, o.h); });
         items.forEach(it => { if(assets[it.type].complete) ctx.drawImage(assets[it.type], it.x, it.y, it.w, it.h); });
     }
