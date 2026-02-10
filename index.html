@@ -8,32 +8,36 @@
 </head>
 <body>
     <div id="hud" style="display: none;">
-        <div class="stat">⭐ REVIEWS: <span id="score-ui">0</span></div>
-        <div class="stat">📍 TO JOB: <span id="goal-ui">20</span></div>
+        <div class="stat-box">⭐ REVIEWS: <span id="score-ui">0</span></div>
+        <div class="stat-box">📍 GOAL: <span id="goal-ui">20</span></div>
     </div>
 
     <div id="ui-layer">
-        <div id="start-menu" class="menu-box">
-            <h1 class="title">HOME SERVICE <span class="gold">HERO</span></h1>
-            <div class="btn-group">
-                <button class="job-btn hvac" onclick="startGame('hvac')">
-                    <b>HVAC PRO</b><br><span>🔧</span>
+        <div id="start-menu" class="overlay">
+            <h1 class="main-title">HOME SERVICE <span class="gold">HERO</span></h1>
+            <p class="subtitle">OUTRUN THE LOW-BIDDERS</p>
+            <div class="selector">
+                <button class="hero-card hvac" onclick="startGame('hvac')">
+                    <h3>HVAC PRO</h3>
+                    <div class="tool-icon">🔧</div>
                 </button>
-                <button class="job-btn roof" onclick="startGame('roof')">
-                    <b>ROOFING PRO</b><br><span>🔨</span>
+                <button class="hero-card roof" onclick="startGame('roof')">
+                    <h3>ROOF PRO</h3>
+                    <div class="tool-icon">🔨</div>
                 </button>
             </div>
+            <p class="controls">SPACE to Jump | DOWN to Duck</p>
         </div>
 
-        <div id="victory-screen" class="menu-box" style="display: none;">
-            <h1 class="victory-text">JOB COMPLETE!</h1>
-            <p id="level-text">Level 1 Finished</p>
-            <button class="main-btn" onclick="nextLevel()">START NEXT JOB</button>
+        <div id="victory-screen" class="overlay" style="display: none;">
+            <h1 class="victory-text">MISSION SUCCESS!</h1>
+            <p id="level-msg">5-Star Review Earned</p>
+            <button class="action-btn" onclick="nextLevel()">NEXT JOB SITE</button>
         </div>
 
-        <div id="game-over" class="menu-box" style="display: none;">
+        <div id="game-over" class="overlay" style="display: none;">
             <h1 class="fail-text">OUTBID!</h1>
-            <button class="main-btn" onclick="location.reload()">RE-DEPLOY</button>
+            <button class="action-btn" onclick="location.reload()">RE-DEPLOY PRO</button>
         </div>
     </div>
 
