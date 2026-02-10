@@ -1,143 +1,75 @@
-const canvas = document.getElementById('gameCanvas');
-const ctx = canvas.getContext('2d');
-
-// --- GAME STATE ---
-let score = 0;
-let gameActive = false;
-let isGold = false;
-let selectedJob = 'hvac'; 
-let gameSpeed = 7;
-let obstacles = [];
-let spawnInterval;
-
-// --- ASSET LOADING ---
-const images = {};
-const imageSources = {
-    hvac_normal: 'hvac_normal.png',
-    hvac_gold: 'hvac_gold.png',
-    roofer_normal: 'roofer_normal.png',
-    roofer_gold: 'roofer_gold.png',
-    van: 'van.png',
-    cone: 'obstacle_cone.png',
-    crack: 'obstacle_crack.png',
-    barricade: 'obstacle_barricade.png',
-    lowbid: 'obstacle_lowbid.png',
-    energy: 'energy_drink.png',
-    coffee: 'coffee.png',
-    bg: 'game_bg.jpg'
-};
-
-Object.keys(imageSources).forEach(key => {
-    images[key] = new Image();
-    images[key].src = imageSources[key];
-});
-
-// --- PLAYER OBJECT (Facing Left, placed on Right) ---
-const player = {
-    x: 600,        
-    y: 430,        
-    w: 100,        
-    h: 100,
-    dy: 0,
-    jumpForce: 16,
-    gravity: 0.8,
-    grounded: false
-};
-
-// --- CORE FUNCTIONS ---
-function startGame(job) {
-    selectedJob = job;
-    gameActive = true;
-    score = 0;
-    obstacles = [];
-    document.getElementById('menu-overlay').style.display = 'none';
-    
-    // Start Spawning
-    if(spawnInterval) clearInterval(spawnInterval);
-    spawnInterval = setInterval(spawnObstacle, 1600);
-    
-    update();
+body {
+    margin: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background-color: #1a1a1a;
+    overflow: hidden;
+    font-family: 'Arial Black', sans-serif;
 }
 
-function spawnObstacle() {
-    if (!gameActive) return;
-    
-    const types = ['van', 'cone', 'crack', 'barricade', 'lowbid'];
-    const type = types[Math.floor(Math.random() * types.length)];
-    
-    let w = 60, h = 60;
-    if(type === 'van') { w = 150; h = 100; }
-    if(type === 'crack') { w = 80; h = 20; }
-    if(type === 'lowbid') { w = 70; h = 70; }
-
-    // Spawn off-screen left at x: -200
-    obstacles.push({ x: -200, y: 530 - h, w, h, type });
+#game-container {
+    position: relative;
+    width: 800px;
+    height: 600px;
+    border: 5px solid #333;
+    box-shadow: 0 0 50px rgba(0,0,0,0.5);
 }
 
-function update() {
-    if (!gameActive) return;
-
-    // Physics
-    player.dy += player.gravity;
-    player.y += player.dy;
-
-    // Road Level Collision
-    if (player.y > 430) {
-        player.y = 430;
-        player.dy = 0;
-        player.grounded = true;
-    }
-
-    // Obstacle Logic
-    obstacles.forEach((obs, index) => {
-        obs.x += gameSpeed; // Moving toward the hero
-
-        // Collision Check
-        if (player.x < obs.x + obs.w && player.x + player.w > obs.x &&
-            player.y < obs.y + obs.h && player.y + player.h > obs.y) {
-            if (!isGold) gameOver();
-        }
-
-        // Cleanup
-        if (obs.x > canvas.width) obstacles.splice(index, 1);
-    });
-
-    score += 0.1;
-    draw();
-    requestAnimationFrame(update);
+#menu-overlay {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: rgba(0, 0, 0, 0.85);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    color: white;
+    z-index: 10;
+    text-align: center;
 }
 
-function draw() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-    // 1. Background
-    ctx.drawImage(images.bg, 0, 0, canvas.width, canvas.height);
-
-    // 2. Obstacles
-    obstacles.forEach(obs => {
-        ctx.drawImage(images[obs.type], obs.x, obs.y, obs.w, obs.h);
-    });
-
-    // 3. Player
-    let charKey = `${selectedJob}_${isGold ? 'gold' : 'normal'}`;
-    ctx.drawImage(images[charKey], player.x, player.y, player.w, player.h);
-
-    // 4. Score
-    ctx.fillStyle = "white";
-    ctx.font = "bold 24px Arial";
-    ctx.fillText(`Score: ${Math.floor(score)}`, 20, 40);
+h1 {
+    color: #ffcc00;
+    font-size: 3.5em;
+    margin: 0;
+    text-shadow: 3px 3px #000;
 }
 
-function gameOver() {
-    gameActive = false;
-    alert(`GAME OVER! Your score: ${Math.floor(score)}`);
-    location.reload(); 
+#high-score-display {
+    color: #00ffcc;
+    font-size: 1.5em;
+    margin: 10px 0;
 }
 
-// --- INPUTS ---
-window.addEventListener('keydown', (e) => {
-    if (e.code === 'Space' && player.grounded) {
-        player.dy = -player.jumpForce;
-        player.grounded = false;
-    }
-});
+.button-group button {
+    padding: 20px 40px;
+    margin: 15px;
+    font-size: 1.2em;
+    font-weight: bold;
+    cursor: pointer;
+    border: 3px solid #ffcc00;
+    border-radius: 12px;
+    background: #222;
+    color: #ffcc00;
+    transition: 0.3s;
+}
+
+.button-group button:hover {
+    background: #ffcc00;
+    color: #000;
+    transform: scale(1.1);
+}
+
+.instructions {
+    margin-top: 30px;
+    color: #888;
+    font-size: 0.9em;
+}
+
+canvas {
+    background-color: #000;
+    display: block;
+}
