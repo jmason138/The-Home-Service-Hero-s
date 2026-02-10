@@ -2,51 +2,82 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HOME SERVICE HERO</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>HOME SERVICE HERO: MOBILE</title>
     <style>
-        :root { --gold: #ffcc00; --cyan: #00f2ff; --red: #ff3333; }
-        body { margin: 0; background: #000; display: flex; justify-content: center; align-items: center; height: 100vh; color: white; font-family: 'Arial Black', sans-serif; overflow: hidden; }
-        #game-viewport { position: relative; width: 800px; height: 600px; border: 4px solid #333; background: #111; overflow: hidden; }
+        :root { --gold: #ffcc00; --red: #ff3333; }
+        body { 
+            margin: 0; background: #000; color: white; 
+            font-family: 'Arial Black', sans-serif; overflow: hidden;
+            touch-action: manipulation; /* Prevents zooming on taps */
+        }
+        #game-viewport { 
+            position: relative; width: 100vw; height: 100vh; 
+            max-width: 800px; max-height: 600px;
+            margin: auto; background: #111; overflow: hidden; 
+        }
+        canvas { width: 100%; height: 100%; display: block; }
         
         #menu { 
             position: absolute; inset: 0; 
             background: url('menu_bg.jpg.jpg') no-repeat center center; 
             background-size: cover;
             display: flex; flex-direction: column; justify-content: flex-end; align-items: center; 
-            z-index: 100; text-align: center; padding-bottom: 60px;
+            z-index: 100; padding-bottom: 40px;
         }
 
-        #win-screen, #lose-screen { position: absolute; inset: 0; background: rgba(0,0,0,0.95); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 101; text-align: center; padding: 40px; display: none; }
-        h1 { font-size: 3rem; margin: 0; color: var(--gold); text-shadow: 3px 3px 0 #000; }
-        button { padding: 15px 30px; font-size: 1.2rem; font-weight: 900; cursor: pointer; border: 3px solid var(--gold); background: rgba(0,0,0,0.8); color: var(--gold); text-transform: uppercase; margin: 10px; transition: 0.2s; }
-        button:hover { background: var(--gold); color: #000; }
-        .hud { position: absolute; top: 20px; width: 100%; display: flex; justify-content: space-around; font-size: 1.2rem; pointer-events: none; z-index: 10; text-shadow: 2px 2px 0 #000; }
+        #win-screen, #lose-screen { 
+            position: absolute; inset: 0; background: rgba(0,0,0,0.9); 
+            display: none; flex-direction: column; justify-content: center; 
+            align-items: center; z-index: 101; text-align: center; 
+        }
+        
+        button { 
+            padding: 20px 40px; font-size: 1.2rem; font-weight: 900; 
+            cursor: pointer; border: 3px solid var(--gold); 
+            background: rgba(0,0,0,0.8); color: var(--gold); 
+            margin: 10px; text-transform: uppercase;
+        }
+
+        .hud { 
+            position: absolute; top: 10px; width: 100%; 
+            display: flex; justify-content: space-around; 
+            font-size: 1rem; z-index: 10; pointer-events: none;
+        }
+
+        /* Mobile Touch Overlays */
+        .touch-zone {
+            position: absolute; bottom: 0; height: 100%; width: 50%;
+            z-index: 50; opacity: 0;
+        }
+        #jump-zone { left: 0; }
+        #duck-zone { right: 0; }
     </style>
 </head>
 <body>
 
 <div id="game-viewport">
     <div id="menu">
-        <button onclick="initGame('hvac')">START HVAC MISSION</button>
-        <button onclick="initGame('roofer')">START ROOF MISSION</button>
+        <button onclick="initGame('hvac')">HVAC MISSION</button>
+        <button onclick="initGame('roofer')">ROOF MISSION</button>
     </div>
 
     <div id="win-screen">
-        <h1>INSTALL COMPLETE!</h1>
-        <p>You delivered quality service. Level 1 Clear.</p>
+        <h1>MISSION COMPLETE!</h1>
         <button onclick="location.reload()">NEXT JOB</button>
     </div>
 
     <div id="lose-screen">
         <h1 style="color:var(--red)">BID LOST!</h1>
-        <p>The customer chose a low-bidder and lost quality. Re-bid the job!</p>
         <button onclick="location.reload()">RE-TRY</button>
     </div>
 
+    <div id="jump-zone" class="touch-zone"></div>
+    <div id="duck-zone" class="touch-zone"></div>
+
     <div class="hud" id="hud" style="display:none;">
-        <div>CHALLENGES: <span id="count">0</span> / 20</div>
-        <div id="status" style="color:var(--gold)"></div>
+        <div>JOBS: <span id="count">0</span>/20</div>
+        <div id="status"></div>
     </div>
 
     <canvas id="gameCanvas" width="800" height="600"></canvas>
@@ -57,7 +88,6 @@
     const ctx = canvas.getContext('2d');
     
     let state = { active: false, job: 'hvac', challenges: 0, speed: 8, isGold: false, goldTimer: 0, houseX: 2000 };
-
     const assets = {};
     const sources = {
         bg: 'game_bg.jpg',
@@ -84,30 +114,18 @@
 
     function spawnLoop() {
         if (!state.active || state.challenges >= 20) return;
-        
         const rand = Math.random();
         if(rand > 0.7) {
-            // SCAM AD - Lowered to 385 so it's a head-height threat
             obstacles.push({ x: 850, y: 385, w: 220, h: 110, type: 'scam' });
         } else {
-            // ALL GROUND OBSTACLES
             const types = ['van', 'cone', 'crack', 'barricade', 'lowbid'];
             const type = types[Math.floor(Math.random() * types.length)];
             let w = 80, h = 80, y = 455;
-            
-            if(type === 'van') { w = 230; h = 150; y = 385; } // Big Van Scale
+            if(type === 'van') { w = 230; h = 150; y = 385; }
             if(type === 'crack') { w = 110; h = 30; y = 505; }
-            if(type === 'barricade') { w = 100; h = 90; y = 445; }
-
             obstacles.push({ x: 850, y: y, w: w, h: h, type: type });
         }
-
-        // Spawn Coffee/Energy
-        if(Math.random() > 0.6) {
-            const itType = Math.random() > 0.5 ? 'energy' : 'coffee';
-            items.push({ x: 900, y: 300, w: 50, h: 50, type: itType });
-        }
-
+        if(Math.random() > 0.6) items.push({ x: 900, y: 300, w: 50, h: 50, type: Math.random() > 0.5 ? 'energy' : 'coffee' });
         state.challenges++;
         document.getElementById('count').innerText = state.challenges;
         setTimeout(spawnLoop, 1500 + Math.random() * 800);
@@ -123,11 +141,7 @@
         player.dy += player.grav;
         player.y += player.dy;
         if (player.y > 435) { player.y = 435; player.dy = 0; player.grounded = true; player.jumpsLeft = 2; }
-
-        if(state.isGold) {
-            state.goldTimer--;
-            if(state.goldTimer <= 0) { state.isGold = false; document.getElementById('status').innerText = ""; }
-        }
+        if(state.isGold && --state.goldTimer <= 0) state.isGold = false;
 
         obstacles.forEach((obs, i) => {
             obs.x -= state.speed;
@@ -139,51 +153,52 @@
 
         items.forEach((it, i) => {
             it.x -= state.speed;
-            if (checkCollision(player, it)) {
-                state.isGold = true; state.goldTimer = 350;
-                document.getElementById('status').innerText = "POWERED UP!";
-                items.splice(i, 1);
-            }
+            if (checkCollision(player, it)) { state.isGold = true; state.goldTimer = 350; items.splice(i, 1); }
         });
 
         if (state.challenges >= 20) {
             state.houseX -= state.speed;
-            if (player.x + player.w > state.houseX + 100) {
-                state.active = false; document.getElementById('win-screen').style.display = 'flex';
-            }
+            if (player.x + player.w > state.houseX + 100) { state.active = false; document.getElementById('win-screen').style.display = 'flex'; }
         }
     }
 
     function draw() {
         ctx.clearRect(0, 0, 800, 600);
         if(assets.bg.complete) ctx.drawImage(assets.bg, 0, 0, 800, 600);
-        
-        // BIG HOUSE GOAL
-        if (state.challenges >= 20 && assets.house.complete) {
-            ctx.drawImage(assets.house, state.houseX, 100, 450, 450);
-        }
+        if (state.challenges >= 20 && assets.house.complete) ctx.drawImage(assets.house, state.houseX, 100, 450, 450);
 
         const charKey = `${state.job}_${state.isGold ? 'gold' : 'normal'}`;
         let dH = player.h, dY = player.y;
-
         if(player.isDucking && player.grounded) { dH = player.h * 0.4; dY = player.y + (player.h * 0.6); }
 
-        if(assets[charKey] && assets[charKey].complete) ctx.drawImage(assets[charKey], player.x, dY, player.w, dH);
-        obstacles.forEach(o => { if(assets[o.type].complete) ctx.drawImage(assets[o.type], o.x, o.y, o.w, o.h); });
-        items.forEach(it => { if(assets[it.type].complete) ctx.drawImage(assets[it.type], it.x, it.y, it.w, it.h); });
+        if(assets[charKey]?.complete) ctx.drawImage(assets[charKey], player.x, dY, player.w, dH);
+        obstacles.forEach(o => { if(assets[o.type]?.complete) ctx.drawImage(assets[o.type], o.x, o.y, o.w, o.h); });
+        items.forEach(it => { if(assets[it.type]?.complete) ctx.drawImage(assets[it.type], it.x, it.y, it.w, it.h); });
     }
 
     function checkCollision(p, o) {
         let pH = p.isDucking && p.grounded ? p.h * 0.4 : p.h;
         let pY = p.isDucking && p.grounded ? p.y + (p.h * 0.6) : p.y;
-        const b = 20; 
-        return p.x + b < o.x + o.w && p.x + p.w - b > o.x && pY + b < o.y + o.h && pY + pH - b > o.y;
+        return p.x + 20 < o.x + o.w && p.x + p.w - 20 > o.x && pY + 20 < o.y + o.h && pY + pH - 20 > o.y;
     }
 
+    // --- MOBILE TOUCH CONTROLS ---
+    document.getElementById('jump-zone').addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        if (player.jumpsLeft > 0) { player.dy = -player.jump; player.jumpsLeft--; player.grounded = false; player.isDucking = false; }
+    });
+
+    document.getElementById('duck-zone').addEventListener('touchstart', (e) => {
+        e.preventDefault(); player.isDucking = true;
+    });
+
+    document.getElementById('duck-zone').addEventListener('touchend', (e) => {
+        e.preventDefault(); player.isDucking = false;
+    });
+
+    // Keyboard fallback
     window.addEventListener('keydown', (e) => {
-        if (e.code === 'Space' && player.jumpsLeft > 0) {
-            player.dy = -player.jump; player.jumpsLeft--; player.grounded = false; player.isDucking = false;
-        }
+        if (e.code === 'Space' && player.jumpsLeft > 0) { player.dy = -player.jump; player.jumpsLeft--; player.grounded = false; }
         if (e.code === 'KeyS' || e.code === 'ArrowDown') player.isDucking = true;
     });
     window.addEventListener('keyup', (e) => {
