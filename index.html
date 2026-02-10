@@ -6,7 +6,7 @@
     <title>HOME SERVICE HERO</title>
     <style>
         :root { --gold: #ffcc00; --red: #ff3333; }
-        * { box-sizing: border-box; -webkit-touch-callout: none; -webkit-user-select: none; }
+        * { box-sizing: border-box; -webkit-touch-callout: none; -webkit-user-select: none; touch-action: pan-y; }
         
         body { 
             margin: 0; background: #000; color: white; 
@@ -17,35 +17,38 @@
         #game-viewport { 
             position: relative; width: 100vw; height: 100vh; 
             max-width: 800px; max-height: 450px;
-            background: #111; overflow: hidden;
+            background: #000; overflow: hidden;
         }
 
         canvas { width: 100%; height: 100%; display: block; }
         
-        /* Fixed Background Image Logic */
+        /* Focus on Title Art */
         #menu { 
             position: absolute; inset: 0; 
             z-index: 100; display: flex; flex-direction: column; 
-            justify-content: flex-end; align-items: center; padding-bottom: 30px;
+            justify-content: flex-end; align-items: center; 
+            padding-bottom: 5vh; /* Positions buttons over the 'Start Mission' area */
         }
 
         #menu-bg-img {
             position: absolute; inset: 0; width: 100%; height: 100%;
-            object-fit: cover; z-index: -1;
+            object-fit: contain; /* Keeps the full title and buildings visible */
+            z-index: -1;
+            background: #000;
         }
 
         .start-btn { 
-            padding: 15px 35px; font-size: 1.2rem; font-weight: 900; 
-            border: 4px solid var(--gold); background: rgba(0,0,0,0.85); 
-            color: var(--gold); margin: 10px; text-transform: uppercase;
-            border-radius: 8px; cursor: pointer;
+            padding: 12px 30px; font-size: 1.1rem; font-weight: 900; 
+            border: 3px solid var(--gold); background: rgba(0,0,0,0.9); 
+            color: var(--gold); margin: 8px; text-transform: uppercase;
+            border-radius: 50px; cursor: pointer; transition: 0.2s;
         }
+        .start-btn:active { transform: scale(0.95); background: var(--gold); color: #000; }
 
-        /* Clean Gameplay Hints */
         #mobile-hint {
             position: absolute; top: 15px; width: 100%; text-align: center;
-            font-size: 0.9rem; color: #fff; z-index: 10; text-shadow: 2px 2px #000;
-            pointer-events: none;
+            font-size: 0.85rem; color: #fff; z-index: 10; text-shadow: 2px 2px #000;
+            pointer-events: none; background: rgba(0,0,0,0.4); padding: 5px 0;
         }
 
         #win-screen, #lose-screen { 
@@ -54,7 +57,6 @@
             align-items: center; z-index: 101; text-align: center; 
         }
 
-        /* Mobile Invisible Tap Zones */
         .tap-zone { position: absolute; top: 0; height: 100%; width: 50%; z-index: 90; }
         #left-tap { left: 0; }
         #right-tap { right: 0; }
@@ -64,19 +66,19 @@
 
 <div id="game-viewport">
     <div id="menu">
-        <img id="menu-bg-img" src="menu_bg.jpg" alt="Home Service Hero">
+        <img id="menu-bg-img" src="menu_bg.jpg" alt="Home Service Hero Title">
         <div style="display:flex;">
-            <button class="start-btn" onclick="initGame('hvac')">HVAC</button>
-            <button class="start-btn" onclick="initGame('roofer')">ROOF</button>
+            <button class="start-btn" onclick="initGame('hvac')">HVAC Mission</button>
+            <button class="start-btn" onclick="initGame('roofer')">Roof Mission</button>
         </div>
     </div>
 
-    <div id="mobile-hint" style="display:none;">TAP LEFT SIDE: JUMP | HOLD RIGHT SIDE: DUCK</div>
+    <div id="mobile-hint" style="display:none;">LEFT SIDE: JUMP | RIGHT SIDE (HOLD): DUCK</div>
     <div id="left-tap" class="tap-zone" style="display:none;"></div>
     <div id="right-tap" class="tap-zone" style="display:none;"></div>
 
-    <div id="win-screen"><h1>MISSION SUCCESS</h1><button class="start-btn" onclick="location.reload()">RESTART</button></div>
-    <div id="lose-screen"><h1>BID LOST</h1><button class="start-btn" onclick="location.reload()">TRY AGAIN</button></div>
+    <div id="win-screen"><h1>MISSION SUCCESS!</h1><button class="start-btn" onclick="location.reload()">NEXT JOB</button></div>
+    <div id="lose-screen"><h1>BID LOST!</h1><button class="start-btn" onclick="location.reload()">RE-TRY</button></div>
 
     <canvas id="gameCanvas" width="800" height="450"></canvas>
 </div>
@@ -137,7 +139,7 @@
     function update() {
         player.dy += player.grav;
         player.y += player.dy;
-        if (player.y > GROUND_Y) { player.y = GROUND_Y; player.dy = 0; player.jumpsLeft = 2; }
+        if (player.y > GROUND_Y) { player.y = GROUND_Y; player.dy = 0; player.grounded = true; player.jumpsLeft = 2; }
 
         obstacles.forEach((obs, i) => {
             obs.x -= state.speed;
@@ -173,19 +175,19 @@
         return p.x + 20 < o.x + o.w && p.x + p.w - 20 > o.x && pY + 20 < o.y + o.h && pY + pH - 20 > o.y;
     }
 
-    // --- MOBILE TAP HANDLERS ---
+    // MOBILE TAP HANDLERS
     document.getElementById('left-tap').addEventListener('touchstart', (e) => {
         e.preventDefault();
         if (player.jumpsLeft > 0) { player.dy = -player.jump; player.jumpsLeft--; player.isDucking = false; }
-    });
+    }, {passive: false});
 
     document.getElementById('right-tap').addEventListener('touchstart', (e) => {
         e.preventDefault(); player.isDucking = true;
-    });
+    }, {passive: false});
 
     document.getElementById('right-tap').addEventListener('touchend', (e) => {
         e.preventDefault(); player.isDucking = false;
-    });
+    }, {passive: false});
 </script>
 </body>
 </html>
