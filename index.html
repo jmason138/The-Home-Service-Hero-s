@@ -3,38 +3,45 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Home Service Hero: Pro Edition</title>
+    <title>Home Service Hero: Elite</title>
     <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Roboto:wght@900&display=swap" rel="stylesheet">
 </head>
 <body>
     <div id="ui-layer">
         <div id="start-menu">
-            <h1 id="game-title">HOME SERVICE HERO</h1>
-            <div id="best-tag">🏆 TOP PRO SCORE: <span id="best-ui">0</span></div>
+            <h1 class="hero-title">HOME SERVICE <span class="gold">HERO</span></h1>
+            <div id="best-tag">🏆 ALL-TIME PRO SCORE: <span id="best-ui">0</span></div>
+            
             <div class="selector-container">
-                <button class="job-btn hvac" onclick="startGame('hvac')">
-                    <div class="btn-top">HVAC ELITE</div>
-                    <span class="btn-icon">🔧</span>
-                </button>
-                <button class="job-btn roof" onclick="startGame('roof')">
-                    <div class="btn-top">LYONS ROOFING</div>
-                    <span class="btn-icon">🔨</span>
-                </button>
+                <div class="card" onclick="startGame('hvac')">
+                    <div class="card-inner hvac">
+                        <h3>HVAC ELITE</h3>
+                        <p>Maintenance Mission</p>
+                        <span class="icon">🔧</span>
+                    </div>
+                </div>
+                <div class="card" onclick="startGame('roof')">
+                    <div class="card-inner roof">
+                        <h3>LYONS ROOFING</h3>
+                        <p>Installation Mission</p>
+                        <span class="icon">🔨</span>
+                    </div>
+                </div>
             </div>
-            <div class="pc-hint">⌨️ SPACE: JUMP | DOWN: DUCK</div>
+            <p class="hint">SPACE to Leap | DOWN to Duck</p>
         </div>
 
         <div id="hud" style="display: none;">
-            <div class="stat-box">⭐ REFERRALS: <span id="score-ui">0</span></div>
+            <div class="stat">⭐ REFERRALS: <span id="score-ui">0</span></div>
         </div>
 
         <div id="game-over" style="display: none;">
-            <h1 class="glow-text">JOB LOST!</h1>
-            <p>A low-bidder cut corners and took the lead.</p>
-            <button class="retry-btn" onclick="location.reload()">RESTART MISSION</button>
+            <h1 class="fail-text">OUTBID!</h1>
+            <p>Quality was high, but the scammer was faster.</p>
+            <button class="retry-btn" onclick="location.reload()">RE-DEPLOY PRO</button>
         </div>
     </div>
-
     <canvas id="gameCanvas"></canvas>
     <script src="script.js"></script>
 </body>
