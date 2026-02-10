@@ -5,46 +5,38 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Home Service Hero: Elite</title>
     <link rel="stylesheet" href="styles.css">
-    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Roboto:wght@900&display=swap" rel="stylesheet">
 </head>
 <body>
+    <div id="hud" style="display: none;">
+        <div class="stat">⭐ REVIEWS: <span id="score-ui">0</span></div>
+        <div class="stat">📍 TO JOB: <span id="goal-ui">20</span></div>
+    </div>
+
     <div id="ui-layer">
-        <div id="start-menu">
-            <h1 class="hero-title">HOME SERVICE <span class="gold">HERO</span></h1>
-            <div id="best-tag">🏆 TOP PRO RATING: <span id="best-ui">0</span></div>
-            <div class="selector-container">
-                <div class="card" onclick="startGame('hvac')">
-                    <div class="card-inner hvac">
-                        <h3>HVAC ELITE</h3>
-                        <span class="icon">🔧</span>
-                    </div>
-                </div>
-                <div class="card" onclick="startGame('roof')">
-                    <div class="card-inner roof">
-                        <h3>LYONS ROOFING</h3>
-                        <span class="icon">🔨</span>
-                    </div>
-                </div>
+        <div id="start-menu" class="menu-box">
+            <h1 class="title">HOME SERVICE <span class="gold">HERO</span></h1>
+            <div class="btn-group">
+                <button class="job-btn hvac" onclick="startGame('hvac')">
+                    <b>HVAC PRO</b><br><span>🔧</span>
+                </button>
+                <button class="job-btn roof" onclick="startGame('roof')">
+                    <b>ROOFING PRO</b><br><span>🔨</span>
+                </button>
             </div>
         </div>
 
-        <div id="hud" style="display: none;">
-            <div class="stat">⭐ 5-STAR REVIEWS: <span id="score-ui">0</span></div>
-            <div class="stat">📍 DISTANCE TO JOB: <span id="goal-ui">20</span></div>
+        <div id="victory-screen" class="menu-box" style="display: none;">
+            <h1 class="victory-text">JOB COMPLETE!</h1>
+            <p id="level-text">Level 1 Finished</p>
+            <button class="main-btn" onclick="nextLevel()">START NEXT JOB</button>
         </div>
 
-        <div id="game-over" style="display: none;">
+        <div id="game-over" class="menu-box" style="display: none;">
             <h1 class="fail-text">OUTBID!</h1>
-            <button class="retry-btn" onclick="location.reload()">RE-DEPLOY PRO</button>
-        </div>
-
-        <div id="victory-screen" style="display: none;">
-            <h1 class="victory-text">JOB COMPLETED!</h1>
-            <h2 id="level-up-text">LEVEL 2 UNLOCKED</h2>
-            <p>The customer is thrilled with your professional work.</p>
-            <button class="next-btn" onclick="nextLevel()">START NEXT JOB</button>
+            <button class="main-btn" onclick="location.reload()">RE-DEPLOY</button>
         </div>
     </div>
+
     <canvas id="gameCanvas"></canvas>
     <script src="script.js"></script>
 </body>
