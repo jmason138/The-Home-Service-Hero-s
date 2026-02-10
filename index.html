@@ -16,7 +16,6 @@
 
         canvas { width: 100%; height: 100%; display: block; }
         
-        /* Menu Layout */
         #menu { 
             position: absolute; inset: 0; z-index: 100; 
             display: flex; flex-direction: column; justify-content: flex-end; 
@@ -31,7 +30,6 @@
         .instruction-box h3 { color: var(--gold); margin: 0 0 5px 0; font-size: 0.9rem; text-transform: uppercase; }
         .instruction-box p { margin: 3px 0; font-size: 0.8rem; font-family: sans-serif; }
 
-        /* Branded Image Buttons */
         .select-header { color: white; text-shadow: 2px 2px #000; margin-bottom: 10px; font-size: 1.2rem; text-transform: uppercase; }
         .btn-container { display: flex; gap: 25px; margin-bottom: 20px; }
         
@@ -44,7 +42,6 @@
         .img-btn:hover { box-shadow: 0 0 20px var(--gold); }
         .img-btn img { max-width: 100%; max-height: 100%; object-fit: contain; }
 
-        /* Screens */
         #win-screen { position: absolute; inset: 0; background: white; display: none; flex-direction: column; justify-content: center; align-items: center; z-index: 101; color: #333; text-align: center; padding: 5%; }
         #lose-screen { position: absolute; inset: 0; background: rgba(0,0,0,0.9); display: none; flex-direction: column; justify-content: center; align-items: center; z-index: 101; color: #ff3333; }
         .tap-zone { position: absolute; top: 0; height: 100%; width: 50%; z-index: 90; display: none; }
@@ -54,23 +51,17 @@
 
 <div id="game-viewport">
     <div id="menu">
-        <img id="menu-bg-img" src="menu_bg.jpg.jpg" alt="Home Service Hero Title Screen">
-        
+        <img id="menu-bg-img" src="menu_bg.jpg.jpg">
         <div class="instruction-box">
             <h3>Objective: Deliver Heroic Service!</h3>
             <p><strong>COMPUTER:</strong> [Space] Jump | [Down Arrow] Duck</p>
             <p><strong>MOBILE:</strong> Tap Left to Jump | Hold Right to Duck</p>
         </div>
-
         <div style="text-align:center;">
             <div class="select-header">SELECT YOUR HOME SERVICE PRO</div>
             <div class="btn-container">
-                <button class="img-btn" onclick="initGame('hvac')">
-                    <img src="aQuality-logo.png" alt="Select A Quality HVAC">
-                </button>
-                <button class="img-btn" onclick="initGame('roofer')">
-                    <img src="lyons-horz-logo.png" alt="Select Lyons Roofing">
-                </button>
+                <button class="img-btn" onclick="initGame('hvac')"><img src="aQuality-logo.png"></button>
+                <button class="img-btn" onclick="initGame('roofer')"><img src="lyons-horz-logo.png"></button>
             </div>
         </div>
     </div>
@@ -87,7 +78,6 @@
 
     <div id="left-tap" class="tap-zone" style="left:0;"></div>
     <div id="right-tap" class="tap-zone" style="right:0;"></div>
-
     <canvas id="gameCanvas" width="800" height="450"></canvas>
 </div>
 
@@ -96,12 +86,15 @@
     const ctx = canvas.getContext('2d');
     const GROUND_Y = 380; 
 
-    // Audio Setup
+    // --- AUDIO SYSTEM ---
     const sounds = {
         jump: new Audio('jump.wav'),
         duck: new Audio('duck.wav'),
-        success: new Audio('success.wav')
+        success: new Audio('success.wav'),
+        bgm: new Audio('background-music.mp3')
     };
+    sounds.bgm.loop = true;
+    sounds.bgm.volume = 0.4; // Set background music slightly quieter than SFX
 
     function playSfx(name) {
         sounds[name].currentTime = 0;
@@ -125,6 +118,7 @@
 
     function initGame(job) {
         state.job = job; state.active = true;
+        sounds.bgm.play().catch(() => {}); // Start Music
         document.getElementById('menu').style.display = 'none';
         document.querySelectorAll('.tap-zone').forEach(z => z.style.display = 'block');
         spawnLoop(); gameLoop();
@@ -157,7 +151,9 @@
         obstacles.forEach((obs) => {
             obs.x -= state.speed;
             if (checkCollision(player, obs)) {
-                state.active = false; document.getElementById('lose-screen').style.display = 'flex';
+                state.active = false; 
+                sounds.bgm.pause(); // Stop music on fail
+                document.getElementById('lose-screen').style.display = 'flex';
             }
         });
 
@@ -169,6 +165,7 @@
 
     function finishJob() {
         state.active = false;
+        sounds.bgm.pause(); // Stop music on win
         playSfx('success');
         const logo = document.getElementById('win-brand-logo');
         const quote = document.getElementById('customer-quote');
@@ -185,11 +182,8 @@
     function draw() {
         ctx.clearRect(0, 0, 800, 450);
         if(assets.bg.complete) ctx.drawImage(assets.bg, 0, 0, 800, 450);
-        
-        // HUD Logo: Bottom Left during gameplay
         const hudLogo = state.job === 'hvac' ? assets.logo_hvac : assets.logo_roof;
         if(hudLogo?.complete) ctx.drawImage(hudLogo, 20, 395, 65, 35);
-
         if (state.challenges >= 20 && assets.house.complete) ctx.drawImage(assets.house, state.houseX, 50, 400, 400);
 
         let charKey = `${state.job}_normal`;
@@ -218,15 +212,10 @@
     
     document.getElementById('left-tap').addEventListener('touchstart', (e) => { 
         e.preventDefault(); 
-        if (player.jumpsLeft > 0) { 
-            player.dy = -player.jump; player.jumpsLeft--; 
-            playSfx('jump');
-        } 
+        if (player.jumpsLeft > 0) { player.dy = -player.jump; player.jumpsLeft--; playSfx('jump'); } 
     });
     document.getElementById('right-tap').addEventListener('touchstart', (e) => { 
-        e.preventDefault(); 
-        player.isDucking = true; 
-        playSfx('duck');
+        e.preventDefault(); player.isDucking = true; playSfx('duck');
     });
     document.getElementById('right-tap').addEventListener('touchend', (e) => { e.preventDefault(); player.isDucking = false; });
 </script>
