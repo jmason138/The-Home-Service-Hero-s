@@ -1,65 +1,48 @@
-:root {
-    --gold: #f1c40f;
-    --hvac: #27ae60;
-    --roof: #c0392b;
-}
-
 body, html {
     margin: 0; padding: 0; width: 100%; height: 100%;
-    background: #1a1a1a; color: white;
-    font-family: 'Segoe UI', Arial, sans-serif;
-    overflow: hidden;
+    background: #0f172a; color: white;
+    font-family: 'Roboto', sans-serif; overflow: hidden;
 }
 
 #ui-layer {
     position: absolute; inset: 0; z-index: 10;
     display: flex; flex-direction: column; align-items: center; justify-content: center;
-    background: rgba(0,0,0,0.2);
+    background: radial-gradient(circle, rgba(15,23,42,0.6) 0%, rgba(15,23,42,0.9) 100%);
 }
 
-#game-title {
-    font-size: 60px; font-weight: 900; color: var(--gold);
-    text-shadow: 4px 4px 0px #000; margin: 0;
+.hero-title {
+    font-family: 'Bebas Neue', cursive; font-size: 100px;
+    letter-spacing: 4px; margin: 0;
+    text-shadow: 0 10px 20px rgba(0,0,0,0.5);
 }
 
-#best-tag {
-    background: rgba(0,0,0,0.8); padding: 10px 30px;
-    border-radius: 50px; border: 2px solid var(--gold);
-    margin: 20px 0 40px 0; font-weight: bold;
+.gold { color: #f1c40f; }
+
+.selector-container { display: flex; gap: 30px; margin-top: 40px; }
+
+.card {
+    perspective: 1000px; cursor: pointer;
 }
 
-.selector-container { display: flex; gap: 20px; }
-
-.job-btn {
-    width: 220px; height: 120px; border: none; border-radius: 15px;
-    cursor: pointer; transition: 0.2s; color: white;
-    display: flex; flex-direction: column; align-items: center; justify-content: center;
-    box-shadow: 0 8px 0 #000;
+.card-inner {
+    width: 260px; height: 160px; padding: 20px;
+    border-radius: 20px; text-align: center;
+    transition: transform 0.4s; transform-style: preserve-3d;
+    box-shadow: 0 15px 35px rgba(0,0,0,0.5);
+    border: 1px solid rgba(255,255,255,0.1);
 }
 
-.hvac { background: linear-gradient(#2ecc71, #27ae60); }
-.roof { background: linear-gradient(#e74c3c, #c0392b); }
-.job-btn:hover { transform: translateY(-3px); }
+.card:hover .card-inner { transform: rotateY(10deg) translateY(-10px); }
 
-.btn-top { font-size: 20px; font-weight: bold; }
-.btn-icon { font-size: 40px; margin-top: 5px; }
+.hvac { background: linear-gradient(135deg, #1e293b, #27ae60); }
+.roof { background: linear-gradient(135deg, #1e293b, #c0392b); }
 
-.pc-hint { margin-top: 30px; font-size: 14px; opacity: 0.7; letter-spacing: 2px; }
+.icon { font-size: 50px; display: block; margin-top: 10px; }
 
-#hud { position: absolute; top: 20px; display: flex; width: 100%; justify-content: center; }
-.stat-box { background: rgba(0,0,0,0.8); padding: 10px 25px; border-radius: 10px; border-bottom: 4px solid var(--gold); font-weight: 900; }
-
-#game-over {
-    background: rgba(0,0,0,0.9); position: absolute; inset: 0;
-    display: flex; flex-direction: column; align-items: center; justify-content: center;
-}
-
-.glow-text { color: #ff4444; font-size: 60px; text-shadow: 0 0 20px #ff0000; margin: 0; }
+.fail-text { font-family: 'Bebas Neue'; font-size: 80px; color: #ff4444; }
 
 .retry-btn {
-    background: var(--gold); border: none; padding: 20px 50px;
-    border-radius: 12px; font-size: 22px; font-weight: 900; cursor: pointer;
-    margin-top: 30px; box-shadow: 0 6px 0 #937805;
+    background: #f1c40f; border: none; padding: 15px 40px;
+    font-size: 20px; font-weight: bold; border-radius: 50px;
+    cursor: pointer; margin-top: 20px; box-shadow: 0 5px 0 #937805;
 }
-
-canvas { display: block; }
