@@ -1,27 +1,15 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>The Home Service Hero</title>
-    <link rel="stylesheet" href="style.css">
-</head>
-<body>
-
-    <div id="game-container">
-        <div id="menu-overlay">
-            <h1>THE HOME SERVICE HERO</h1>
-            <p>Select Your Professional:</p>
-            <div class="button-group">
-                <button onclick="startGame('hvac')">HVAC TECH</button>
-                <button onclick="startGame('roofer')">ROOFER</button>
-            </div>
-            <p style="margin-top: 20px; font-size: 0.8em;">Press SPACE to Jump</p>
-        </div>
+<div id="game-container">
+    <div id="menu-overlay">
+        <h1>THE HOME SERVICE HERO</h1>
+        <p>Select Your Professional:</p>
+        <div id="high-score-display" style="color: #ffcc00; margin-bottom: 10px; font-size: 1.5em;">Best: 0</div>
         
-        <canvas id="gameCanvas" width="800" height="600"></canvas>
+        <div class="button-group">
+            <button onclick="startGame('hvac')">HVAC TECH</button>
+            <button onclick="startGame('roofer')">ROOFER</button>
+        </div>
+        <p style="margin-top: 20px; font-size: 0.8em; color: #aaa;">SPACE to Jump | Collect Drinks to go GOLD</p>
     </div>
-
-    <script src="script.js"></script>
-</body>
-</html>
+    
+    <canvas id="gameCanvas" width="800" height="600"></canvas>
+</div>
