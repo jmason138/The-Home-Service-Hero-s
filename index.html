@@ -2,45 +2,43 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Home Service Hero</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
 
     <div id="ui-layer">
-        <h1 id="main-title">Home Service Hero</h1>
-        
-        <div id="menu">
-            <div id="best-ui-container">🏆 HIGH SCORE: <span id="best-ui">0</span></div>
-            <div class="btn-container">
-                <button class="job-btn hvac-btn" onclick="startGame('hvac')">
+        <div id="start-menu">
+            <h1 id="game-title">HOME SERVICE HERO</h1>
+            <div id="best-tag">🏆 HIGH SCORE: <span id="best-ui">0</span></div>
+            
+            <div class="selector-container">
+                <button class="job-btn hvac" onclick="startGame('hvac')">
                     <b>QUALITY HVAC PRO</b>
-                    <span class="emoji">🔧</span>
+                    <span>🔧</span>
                 </button>
-                <button class="job-btn roof-btn" onclick="startGame('roofer')">
+                <button class="job-btn roof" onclick="startGame('roof')">
                     <b>LYONS ROOFING PRO</b>
-                    <span class="emoji">🔨</span>
+                    <span>🔨</span>
                 </button>
             </div>
-            <div class="controls-hint">TAP TOP TO JUMP • HOLD BOTTOM TO DUCK</div>
+            <p class="controls-guide">Press <b>SPACE</b> to Jump & <b>DOWN ARROW</b> to Duck</p>
+        </div>
+
+        <div id="hud" style="display: none;">
+            <div class="stat">REFERRALS: <span id="score-ui">0</span></div>
+            <div class="stat">SPEED: <span id="speed-ui">1.0</span>x</div>
+        </div>
+
+        <div id="game-over" style="display: none;">
+            <h1>OUTBID!</h1>
+            <p id="final-stats"></p>
+            <button class="retry-btn" onclick="location.reload()">RESTART MISSION</button>
         </div>
     </div>
 
-    <div id="game-wrap">
-        <div id="hud">
-            <div class="pill"><span>LEVEL</span> <b id="lvl-display">1</b></div>
-            <div class="pill"><span>REFERRALS</span> <b id="ref-ui">0</b></div>
-        </div>
-
-        <div id="gameOver">
-            <h1 id="fail-title">OUTBID!</h1>
-            <p id="fail-msg"></p>
-            <button id="retry-btn" onclick="location.reload()">RETRY MISSION</button>
-        </div>
-
-        <canvas id="gameCanvas"></canvas>
-    </div>
+    <canvas id="gameCanvas"></canvas>
 
     <script src="script.js"></script>
 </body>
