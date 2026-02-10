@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>HOME SERVICE HERO</title>
     <style>
-        :root { --gold: #ffcc00; --white: #ffffff; }
+        :root { --gold: #ffcc00; }
         * { box-sizing: border-box; -webkit-touch-callout: none; -webkit-user-select: none; touch-action: none; }
         body { margin: 0; background: #000; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; font-family: 'Arial Black', sans-serif; }
         
@@ -20,7 +20,7 @@
         #menu { 
             position: absolute; inset: 0; z-index: 100; 
             display: flex; flex-direction: column; justify-content: space-between; 
-            align-items: center; padding: 20px; background: rgba(0,0,0,0.2);
+            align-items: center; padding: 20px;
         }
         #menu-bg-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; z-index: -1; }
 
@@ -29,29 +29,30 @@
             background: rgba(255,255,255,0.95); padding: 10px 30px; 
             border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.5);
         }
-        .menu-logo { height: 55px; object-fit: contain; }
+        .header-logo { height: 45px; object-fit: contain; }
 
         .instruction-box { 
             background: rgba(0,0,0,0.85); border: 2px solid var(--gold); border-radius: 15px;
-            padding: 15px; color: white; text-align: center; max-width: 550px;
+            padding: 15px; color: white; text-align: center; max-width: 500px;
         }
-        .instruction-box h3 { color: var(--gold); margin: 0 0 10px 0; font-size: 1rem; text-transform: uppercase; }
-        .instruction-box p { margin: 5px 0; font-size: 0.85rem; font-family: sans-serif; line-height: 1.4; }
+        .instruction-box h3 { color: var(--gold); margin: 0 0 5px 0; font-size: 0.9rem; text-transform: uppercase; }
+        .instruction-box p { margin: 3px 0; font-size: 0.8rem; font-family: sans-serif; }
 
-        .start-btn { 
-            padding: 12px 30px; font-size: 1rem; font-weight: 900; border: 3px solid var(--gold); 
-            background: #000; color: var(--gold); margin: 5px; border-radius: 50px; cursor: pointer;
-            transition: transform 0.1s;
+        /* Branded Image Buttons */
+        .select-header { color: white; text-shadow: 2px 2px #000; margin-bottom: 5px; font-size: 1.2rem; }
+        .btn-container { display: flex; gap: 20px; padding-bottom: 30px; }
+        
+        .img-btn { 
+            background: white; border: 4px solid var(--gold); border-radius: 15px;
+            padding: 10px; cursor: pointer; transition: transform 0.1s, box-shadow 0.1s;
+            width: 180px; height: 100px; display: flex; align-items: center; justify-content: center;
         }
-        .start-btn:active { transform: scale(0.95); }
+        .img-btn:active { transform: scale(0.95); }
+        .img-btn:hover { box-shadow: 0 0 20px var(--gold); }
+        .img-btn img { max-width: 100%; max-height: 100%; object-fit: contain; }
 
-        /* Win Screen */
-        #win-screen { 
-            position: absolute; inset: 0; background: white; 
-            display: none; flex-direction: column; justify-content: center; 
-            align-items: center; z-index: 101; color: #333; text-align: center; padding: 5%;
-        }
-
+        /* Win/Lose Screens */
+        #win-screen { position: absolute; inset: 0; background: white; display: none; flex-direction: column; justify-content: center; align-items: center; z-index: 101; color: #333; text-align: center; padding: 5%; }
         #lose-screen { position: absolute; inset: 0; background: rgba(0,0,0,0.9); display: none; flex-direction: column; justify-content: center; align-items: center; z-index: 101; color: #ff3333; }
         .tap-zone { position: absolute; top: 0; height: 100%; width: 50%; z-index: 90; display: none; }
     </style>
@@ -63,32 +64,38 @@
         <img id="menu-bg-img" src="menu_bg.jpg.jpg" alt="Title">
         
         <div class="menu-top-logos">
-            <img src="aQuality-logo.png" class="menu-logo" alt="A Quality HVAC">
-            <img src="lyons-horz-logo.png" class="menu-logo" alt="Lyons Roofing">
+            <img src="aQuality-logo.png" class="header-logo">
+            <img src="lyons-horz-logo.png" class="header-logo">
         </div>
 
         <div class="instruction-box">
             <h3>Objective: Deliver Heroic Service!</h3>
-            <p><strong>COMPUTER:</strong> [Space] or [Up Arrow] to Jump | [Down Arrow] to Duck</p>
-            <p><strong>MOBILE:</strong> Tap Left Side to Jump | Hold Right Side to Duck</p>
-            <p style="color:var(--gold); font-weight:bold; margin-top:8px;">Avoid obstacles & low-bid scammers to reach the home!</p>
+            <p><strong>COMPUTER:</strong> [Space] Jump | [Down Arrow] Duck</p>
+            <p><strong>MOBILE:</strong> Tap Left to Jump | Hold Right to Duck</p>
         </div>
 
-        <div style="display:flex; padding-bottom: 20px;">
-            <button class="start-btn" onclick="initGame('hvac')">A QUALITY HVAC</button>
-            <button class="start-btn" onclick="initGame('roofer')">LYONS ROOFING</button>
+        <div style="text-align:center;">
+            <div class="select-header">SELECT YOUR HOME SERVICE PRO</div>
+            <div class="btn-container">
+                <button class="img-btn" onclick="initGame('hvac')">
+                    <img src="aQuality-logo.png" alt="A Quality HVAC">
+                </button>
+                <button class="img-btn" onclick="initGame('roofer')">
+                    <img src="lyons-horz-logo.png" alt="Lyons Roofing">
+                </button>
+            </div>
         </div>
     </div>
 
     <div id="win-screen">
-        <img id="win-brand-logo" style="max-width:250px; margin-bottom:20px;">
-        <h2 id="win-status">SERVICE SUCCESS!</h2>
-        <div id="customer-quote" style="font-family:serif; font-style:italic; font-size:1.2rem; margin: 20px; color:#444;"></div>
-        <img src="google-stars.png" style="width:200px; margin-bottom:10px;">
-        <button class="start-btn" style="background:#333; color:white; border-color:#333;" onclick="location.reload()">NEXT JOB</button>
+        <img id="win-brand-logo" style="max-width:220px; margin-bottom:15px;">
+        <h2>SERVICE SUCCESS!</h2>
+        <div id="customer-quote" style="font-family:serif; font-style:italic; font-size:1.1rem; margin: 15px; color:#444;"></div>
+        <img src="google-stars.png" style="width:180px; margin-bottom:10px;">
+        <button class="img-btn" style="height:60px; width:150px; background:#333; border-color:#333; color:white; font-size:0.8rem;" onclick="location.reload()">NEXT JOB</button>
     </div>
 
-    <div id="lose-screen"><h1>BID REJECTED</h1><button class="start-btn" onclick="location.reload()">RE-TRY</button></div>
+    <div id="lose-screen"><h1>BID REJECTED</h1><button class="img-btn" style="height:60px; width:150px;" onclick="location.reload()">RE-TRY</button></div>
 
     <div id="left-tap" class="tap-zone" style="left:0;"></div>
     <div id="right-tap" class="tap-zone" style="right:0;"></div>
@@ -101,7 +108,7 @@
     const ctx = canvas.getContext('2d');
     const GROUND_Y = 380; 
 
-    // --- AUDIO SYSTEM (.WAV SUPPORT) ---
+    // Audio Setup
     const sounds = {
         jump: new Audio('jump.wav'),
         duck: new Audio('duck.wav'),
@@ -190,11 +197,8 @@
     function draw() {
         ctx.clearRect(0, 0, 800, 450);
         if(assets.bg.complete) ctx.drawImage(assets.bg, 0, 0, 800, 450);
-        
-        // HUD Logo: Bottom Left, Half Size (~75px wide)
         const hudLogo = state.job === 'hvac' ? assets.logo_hvac : assets.logo_roof;
-        if(hudLogo?.complete) ctx.drawImage(hudLogo, 20, 390, 75, 40);
-
+        if(hudLogo?.complete) ctx.drawImage(hudLogo, 20, 395, 65, 35);
         if (state.challenges >= 20 && assets.house.complete) ctx.drawImage(assets.house, state.houseX, 50, 400, 400);
 
         let charKey = `${state.job}_normal`;
