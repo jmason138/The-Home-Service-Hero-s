@@ -9,15 +9,14 @@
         body { margin: 0; background: #000; display: flex; justify-content: center; align-items: center; height: 100vh; color: white; font-family: 'Arial Black', sans-serif; overflow: hidden; }
         #game-viewport { position: relative; width: 800px; height: 600px; border: 4px solid #333; background: #111; overflow: hidden; }
         
-        /* Screens */
         #menu, #win-screen, #lose-screen { position: absolute; inset: 0; background: rgba(0,0,0,0.95); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 100; text-align: center; padding: 40px; }
         #win-screen, #lose-screen { display: none; }
         
         h1 { font-size: 3rem; margin: 0; color: var(--gold); }
         .lose-h1 { color: var(--red); font-size: 2.5rem; }
-        .message { font-size: 1.2rem; line-height: 1.5; margin: 20px 0; color: #ddd; max-width: 600px; }
+        .message { font-size: 1.1rem; line-height: 1.4; margin: 20px 0; color: #ddd; max-width: 600px; }
         
-        button { padding: 15px 30px; font-size: 1.1rem; font-weight: 900; cursor: pointer; border: 3px solid var(--gold); background: transparent; color: var(--gold); text-transform: uppercase; margin: 10px; }
+        button { padding: 15px 30px; font-size: 1.1rem; font-weight: 900; cursor: pointer; border: 3px solid var(--gold); background: transparent; color: var(--gold); text-transform: uppercase; margin: 10px; transition: 0.2s; }
         button:hover { background: var(--gold); color: #000; }
         .btn-red { border-color: var(--red); color: var(--red); }
         .btn-red:hover { background: var(--red); color: #fff; }
@@ -30,7 +29,7 @@
 <div id="game-viewport">
     <div id="menu">
         <h1>HOME SERVICE HERO</h1>
-        <p class="message">Win the bid by reaching the customer's home.<br>Avoid the "Low-Bid" obstacles!</p>
+        <p class="message">Don't let the "Chuck-in-a-Truck" low-bid competitors ruin the industry. Reach the house for a quality install!</p>
         <button onclick="initGame('hvac')">HVAC TECH</button>
         <button onclick="initGame('roofer')">ROOFER</button>
     </div>
@@ -43,12 +42,13 @@
 
     <div id="lose-screen">
         <h1 class="lose-h1">BID LOST!</h1>
-        <p class="message">You were hit by a low-quality competitor! The customer chose the cheaper bid, but <b>they lose in the end</b> due to poor quality service and pricing that won't cover the real work.</p>
-        <button class="btn-red" onclick="location.reload()">RE-BID THE JOB</button>
+        <p class="message">The customer chose the cheaper bid, but <b>they lose in the end</b>. The competitor's poor quality service and low pricing will leave the customer with a mess!</p>
+        <button class="btn-red" onclick="location.reload()">TRY TO SAVE THEM (REPLAY)</button>
     </div>
 
     <div class="hud" id="hud" style="display:none;">
         <div>CHALLENGES: <span id="count">0</span> / 20</div>
+        <div id="status" style="color:var(--gold); font-weight:bold;"></div>
     </div>
 
     <canvas id="gameCanvas" width="800" height="600"></canvas>
@@ -58,16 +58,16 @@
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
     
-    let state = { active: false, job: 'hvac', challenges: 0, speed: 7, isGold: false, houseX: 1000 };
+    let state = { active: false, job: 'hvac', challenges: 0, speed: 7, isGold: false, goldTimer: 0, houseX: 1200 };
 
     const assets = {};
     const sources = {
         bg: 'game_bg.jpg',
-        hvac: 'hvac_normal.png',
-        roofer: 'roofer_normal.png',
-        van: 'van.png',
-        energy: 'energy_drink.png',
-        house: 'menu_bg.jpg'
+        hvac_normal: 'hvac_normal.png', hvac_gold: 'hvac_gold.png',
+        roofer_normal: 'roofer_normal.png', roofer_gold: 'roofer_gold.png',
+        van: 'van.png', cone: 'obstacle_cone.png', crack: 'obstacle_crack.png',
+        barricade: 'obstacle_barricade.png', lowbid: 'obstacle_lowbid.png',
+        energy: 'energy_drink.png', coffee: 'coffee.png', house: 'menu_bg.jpg'
     };
 
     Object.keys(sources).forEach(key => { assets[key] = new Image(); assets[key].src = sources[key]; });
@@ -87,10 +87,26 @@
 
     function spawnLoop() {
         if (!state.active || state.challenges >= 20) return;
-        obstacles.push({ x: 850, y: 450, w: 120, h: 80, type: 'van' });
+        
+        // Randomize Obstacle Type
+        const types = ['van', 'cone', 'crack', 'barricade', 'lowbid'];
+        const type = types[Math.floor(Math.random() * types.length)];
+        let w = 80, h = 80, y = 450;
+        
+        if(type === 'van') { w = 170; h = 100; y = 430; }
+        if(type === 'crack') { w = 110; h = 30; y = 500; }
+        
+        obstacles.push({ x: 850, y: y, w: w, h: h, type: type });
+
+        // Randomly spawn coffee or energy drink
+        if(Math.random() > 0.6) {
+            const itemType = Math.random() > 0.5 ? 'energy' : 'coffee';
+            items.push({ x: 900, y: 320, w: 50, h: 50, type: itemType });
+        }
+
         state.challenges++;
         document.getElementById('count').innerText = state.challenges;
-        setTimeout(spawnLoop, 1800);
+        setTimeout(spawnLoop, 1500 + Math.random() * 1000);
     }
 
     function gameLoop() {
@@ -105,10 +121,29 @@
         player.y += player.dy;
         if (player.y > 435) { player.y = 435; player.dy = 0; player.grounded = true; }
 
+        if(state.isGold) {
+            state.goldTimer--;
+            if(state.goldTimer <= 0) {
+                state.isGold = false;
+                document.getElementById('status').innerText = "";
+            }
+        }
+
         obstacles.forEach((obs, i) => {
             obs.x -= state.speed;
             if (checkCollision(player, obs)) {
-                triggerLose();
+                if(state.isGold) obstacles.splice(i, 1);
+                else triggerLose();
+            }
+        });
+
+        items.forEach((it, i) => {
+            it.x -= state.speed;
+            if (checkCollision(player, it)) {
+                state.isGold = true;
+                state.goldTimer = 300;
+                document.getElementById('status').innerText = "GOLD MODE!";
+                items.splice(i, 1);
             }
         });
 
@@ -122,20 +157,29 @@
         ctx.clearRect(0, 0, 800, 600);
         if(assets.bg.complete) ctx.drawImage(assets.bg, 0, 0, 800, 600);
 
-        if (state.challenges >= 20) {
-            if(assets.house.complete) ctx.drawImage(assets.house, state.houseX, 200, 300, 350);
+        if (state.challenges >= 20 && assets.house.complete) {
+            ctx.drawImage(assets.house, state.houseX, 200, 350, 350);
         }
 
-        const pImg = state.job === 'hvac' ? assets.hvac : assets.roofer;
-        if(pImg.complete) ctx.drawImage(pImg, player.x, player.y, player.w, player.h);
+        const charKey = `${state.job}_${state.isGold ? 'gold' : 'normal'}`;
+        if(assets[charKey].complete) ctx.drawImage(assets[charKey], player.x, player.y, player.w, player.h);
 
         obstacles.forEach(o => {
-            if(assets.van.complete) ctx.drawImage(assets.van, o.x, o.y, o.w, o.h);
+            if(assets[o.type].complete) ctx.drawImage(assets[o.type], o.x, o.y, o.w, o.h);
+            // Label the low bidders
+            ctx.fillStyle = "white";
+            ctx.font = "12px Arial";
+            ctx.fillText("LOW BID", o.x + 10, o.y - 10);
+        });
+
+        items.forEach(it => {
+            if(assets[it.type].complete) ctx.drawImage(assets[it.type], it.x, it.y, it.w, it.h);
         });
     }
 
     function checkCollision(p, o) {
-        return p.x < o.x + o.w - 30 && p.x + p.w > o.x + 30 && p.y < o.y + o.h - 10 && p.y + p.h > o.y + 10;
+        const b = 25;
+        return p.x + b < o.x + o.w && p.x + p.w - b > o.x && p.y + b < o.y + o.h && p.y + p.h - b > o.y;
     }
 
     function triggerWin() {
