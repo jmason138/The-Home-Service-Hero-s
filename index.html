@@ -3,45 +3,25 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Home Service Hero: Elite</title>
-    <link rel="stylesheet" href="styles.css">
+    <title>The Home Service Hero</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div id="hud" style="display: none;">
-        <div class="stat-box">⭐ REVIEWS: <span id="score-ui">0</span></div>
-        <div class="stat-box">📍 GOAL: <span id="goal-ui">20</span></div>
-    </div>
 
-    <div id="ui-layer">
-        <div id="start-menu" class="overlay">
-            <h1 class="main-title">HOME SERVICE <span class="gold">HERO</span></h1>
-            <p class="subtitle">OUTRUN THE LOW-BIDDERS</p>
-            <div class="selector">
-                <button class="hero-card hvac" onclick="startGame('hvac')">
-                    <h3>HVAC PRO</h3>
-                    <div class="tool-icon">🔧</div>
-                </button>
-                <button class="hero-card roof" onclick="startGame('roof')">
-                    <h3>ROOF PRO</h3>
-                    <div class="tool-icon">🔨</div>
-                </button>
+    <div id="game-container">
+        <div id="menu-overlay">
+            <h1>THE HOME SERVICE HERO</h1>
+            <p>Select Your Professional:</p>
+            <div class="button-group">
+                <button onclick="startGame('hvac')">HVAC TECH</button>
+                <button onclick="startGame('roofer')">ROOFER</button>
             </div>
-            <p class="controls">SPACE to Jump | DOWN to Duck</p>
+            <p style="margin-top: 20px; font-size: 0.8em;">Press SPACE to Jump</p>
         </div>
-
-        <div id="victory-screen" class="overlay" style="display: none;">
-            <h1 class="victory-text">MISSION SUCCESS!</h1>
-            <p id="level-msg">5-Star Review Earned</p>
-            <button class="action-btn" onclick="nextLevel()">NEXT JOB SITE</button>
-        </div>
-
-        <div id="game-over" class="overlay" style="display: none;">
-            <h1 class="fail-text">OUTBID!</h1>
-            <button class="action-btn" onclick="location.reload()">RE-DEPLOY PRO</button>
-        </div>
+        
+        <canvas id="gameCanvas" width="800" height="600"></canvas>
     </div>
 
-    <canvas id="gameCanvas"></canvas>
     <script src="script.js"></script>
 </body>
 </html>
