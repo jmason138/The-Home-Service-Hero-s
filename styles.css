@@ -1,48 +1,21 @@
-body, html {
-    margin: 0; padding: 0; width: 100%; height: 100%;
-    background: #0f172a; color: white;
-    font-family: 'Roboto', sans-serif; overflow: hidden;
-}
+:root { --gold: #f1c40f; }
+body, html { margin: 0; padding: 0; width: 100%; height: 100%; background: #0f172a; overflow: hidden; font-family: 'Roboto', sans-serif; }
+#ui-layer { position: absolute; inset: 0; z-index: 10; display: flex; flex-direction: column; align-items: center; justify-content: center; pointer-events: none; }
+#start-menu, #game-over, #victory-screen { pointer-events: auto; text-align: center; }
 
-#ui-layer {
-    position: absolute; inset: 0; z-index: 10;
-    display: flex; flex-direction: column; align-items: center; justify-content: center;
-    background: radial-gradient(circle, rgba(15,23,42,0.6) 0%, rgba(15,23,42,0.9) 100%);
-}
+/* HUD positioning */
+#hud { position: absolute; top: 20px; left: 0; width: 100%; display: flex; justify-content: space-around; pointer-events: none; }
+.stat { background: rgba(0,0,0,0.8); padding: 12px 25px; border-radius: 10px; border-bottom: 4px solid var(--gold); color: white; font-weight: 900; font-size: 20px; }
 
-.hero-title {
-    font-family: 'Bebas Neue', cursive; font-size: 100px;
-    letter-spacing: 4px; margin: 0;
-    text-shadow: 0 10px 20px rgba(0,0,0,0.5);
-}
-
-.gold { color: #f1c40f; }
-
-.selector-container { display: flex; gap: 30px; margin-top: 40px; }
-
-.card {
-    perspective: 1000px; cursor: pointer;
-}
-
-.card-inner {
-    width: 260px; height: 160px; padding: 20px;
-    border-radius: 20px; text-align: center;
-    transition: transform 0.4s; transform-style: preserve-3d;
-    box-shadow: 0 15px 35px rgba(0,0,0,0.5);
-    border: 1px solid rgba(255,255,255,0.1);
-}
-
-.card:hover .card-inner { transform: rotateY(10deg) translateY(-10px); }
-
+.hero-title { font-family: 'Bebas Neue'; font-size: 90px; color: white; margin: 0; text-shadow: 0 10px 20px #000; }
+.gold { color: var(--gold); }
+.selector-container { display: flex; gap: 20px; pointer-events: auto; margin-top: 30px; }
+.card-inner { width: 220px; height: 140px; border-radius: 20px; color: white; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; box-shadow: 0 10px 0 #000; transition: 0.2s; }
+.card-inner:hover { transform: translateY(-5px); }
 .hvac { background: linear-gradient(135deg, #1e293b, #27ae60); }
 .roof { background: linear-gradient(135deg, #1e293b, #c0392b); }
 
-.icon { font-size: 50px; display: block; margin-top: 10px; }
-
-.fail-text { font-family: 'Bebas Neue'; font-size: 80px; color: #ff4444; }
-
-.retry-btn {
-    background: #f1c40f; border: none; padding: 15px 40px;
-    font-size: 20px; font-weight: bold; border-radius: 50px;
-    cursor: pointer; margin-top: 20px; box-shadow: 0 5px 0 #937805;
-}
+/* Victory Screen */
+.victory-text { font-family: 'Bebas Neue'; font-size: 100px; color: var(--gold); text-shadow: 0 0 30px rgba(241,196,15,0.8); margin: 0; animation: bounce 1s infinite; }
+@keyframes bounce { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.1); } }
+.next-btn { background: white; border: none; padding: 20px 60px; font-size: 24px; font-weight: 900; border-radius: 50px; cursor: pointer; margin-top: 20px; box-shadow: 0 8px 0 #ddd; }
