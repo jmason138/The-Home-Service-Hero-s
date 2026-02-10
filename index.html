@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>HOME SERVICE HERO: PRO MOBILE</title>
+    <title>HOME SERVICE HERO</title>
     <style>
         :root { --gold: #ffcc00; --red: #ff3333; }
         * { box-sizing: border-box; -webkit-touch-callout: none; -webkit-user-select: none; }
@@ -16,18 +16,36 @@
 
         #game-viewport { 
             position: relative; width: 100vw; height: 100vh; 
-            max-width: 800px; max-height: 450px; /* Adjusted for landscape phones */
-            background: #111; overflow: hidden; border: 2px solid #333;
+            max-width: 800px; max-height: 450px;
+            background: #111; overflow: hidden;
         }
 
-        canvas { width: 100%; height: 100%; object-fit: contain; }
+        canvas { width: 100%; height: 100%; display: block; }
         
+        /* Fixed Background Image Logic */
         #menu { 
             position: absolute; inset: 0; 
-            background: #000 url('menu_bg.jpg.jpg') no-repeat center center; 
-            background-size: contain; /* Ensures the whole image shows */
-            display: flex; flex-direction: column; justify-content: flex-end; 
-            align-items: center; z-index: 100; padding-bottom: 20px;
+            z-index: 100; display: flex; flex-direction: column; 
+            justify-content: flex-end; align-items: center; padding-bottom: 30px;
+        }
+
+        #menu-bg-img {
+            position: absolute; inset: 0; width: 100%; height: 100%;
+            object-fit: cover; z-index: -1;
+        }
+
+        .start-btn { 
+            padding: 15px 35px; font-size: 1.2rem; font-weight: 900; 
+            border: 4px solid var(--gold); background: rgba(0,0,0,0.85); 
+            color: var(--gold); margin: 10px; text-transform: uppercase;
+            border-radius: 8px; cursor: pointer;
+        }
+
+        /* Clean Gameplay Hints */
+        #mobile-hint {
+            position: absolute; top: 15px; width: 100%; text-align: center;
+            font-size: 0.9rem; color: #fff; z-index: 10; text-shadow: 2px 2px #000;
+            pointer-events: none;
         }
 
         #win-screen, #lose-screen { 
@@ -35,57 +53,30 @@
             display: none; flex-direction: column; justify-content: center; 
             align-items: center; z-index: 101; text-align: center; 
         }
-        
-        button { 
-            padding: 12px 24px; font-size: 1rem; font-weight: 900; 
-            border: 3px solid var(--gold); background: rgba(0,0,0,0.8); 
-            color: var(--gold); margin: 5px; text-transform: uppercase;
-        }
 
-        .hud { 
-            position: absolute; top: 10px; width: 100%; 
-            display: flex; justify-content: space-around; 
-            font-size: 0.9rem; z-index: 10; pointer-events: none;
-        }
-
-        /* MOBILE CONTROLS */
-        .mobile-btn { 
-            position: absolute; bottom: 15px; width: 70px; height: 70px; 
-            background: rgba(255, 204, 0, 0.4); border: 2px solid var(--gold); 
-            border-radius: 50%; display: flex; justify-content: center; 
-            align-items: center; z-index: 105; font-size: 0.7rem; color: #fff; 
-        }
-        #jump-btn { left: 15px; }
-        #duck-btn { right: 15px; }
+        /* Mobile Invisible Tap Zones */
+        .tap-zone { position: absolute; top: 0; height: 100%; width: 50%; z-index: 90; }
+        #left-tap { left: 0; }
+        #right-tap { right: 0; }
     </style>
 </head>
 <body>
 
 <div id="game-viewport">
     <div id="menu">
+        <img id="menu-bg-img" src="menu_bg.jpg" alt="Home Service Hero">
         <div style="display:flex;">
-            <button onclick="initGame('hvac')">HVAC</button>
-            <button onclick="initGame('roofer')">ROOF</button>
+            <button class="start-btn" onclick="initGame('hvac')">HVAC</button>
+            <button class="start-btn" onclick="initGame('roofer')">ROOF</button>
         </div>
     </div>
 
-    <div id="win-screen">
-        <h1>JOB DONE!</h1>
-        <button onclick="location.reload()">RESTART</button>
-    </div>
+    <div id="mobile-hint" style="display:none;">TAP LEFT SIDE: JUMP | HOLD RIGHT SIDE: DUCK</div>
+    <div id="left-tap" class="tap-zone" style="display:none;"></div>
+    <div id="right-tap" class="tap-zone" style="display:none;"></div>
 
-    <div id="lose-screen">
-        <h1 style="color:var(--red)">BID LOST</h1>
-        <button onclick="location.reload()">TRY AGAIN</button>
-    </div>
-
-    <div id="jump-btn" class="mobile-btn">JUMP</div>
-    <div id="duck-btn" class="mobile-btn">DUCK</div>
-
-    <div class="hud" id="hud" style="display:none;">
-        <div>PROGRESS: <span id="count">0</span>/20</div>
-        <div id="status"></div>
-    </div>
+    <div id="win-screen"><h1>MISSION SUCCESS</h1><button class="start-btn" onclick="location.reload()">RESTART</button></div>
+    <div id="lose-screen"><h1>BID LOST</h1><button class="start-btn" onclick="location.reload()">TRY AGAIN</button></div>
 
     <canvas id="gameCanvas" width="800" height="450"></canvas>
 </div>
@@ -93,55 +84,48 @@
 <script>
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
-    
-    // GROUND LEVEL (Fixed for all heights)
     const GROUND_Y = 350; 
 
-    let state = { active: false, job: 'hvac', challenges: 0, speed: 7, isGold: false, goldTimer: 0, houseX: 1200 };
+    let state = { active: false, job: 'hvac', challenges: 0, speed: 7.5, houseX: 1200 };
     const assets = {};
     const sources = {
         bg: 'game_bg.jpg',
-        hvac_normal: 'hvac_normal.png', hvac_gold: 'hvac_gold.png',
-        roofer_normal: 'roofer_normal.png', roofer_gold: 'roofer_gold.png',
+        hvac_normal: 'hvac_normal.png',
+        roofer_normal: 'roofer_normal.png',
         van: 'van.png', cone: 'obstacle_cone.png', crack: 'obstacle_crack.png',
         barricade: 'obstacle_barricade.png', lowbid: 'obstacle_lowbid.png',
-        energy: 'energy_drink.png', coffee: 'coffee.png', scam: 'scam_ad.png',
-        house: 'menu_bg.jpg.jpg'
+        scam: 'scam_ad.png',
+        house: 'menu_bg.jpg'
     };
 
     Object.keys(sources).forEach(key => { assets[key] = new Image(); assets[key].src = sources[key]; });
 
-    const player = { x: 50, y: GROUND_Y, w: 80, h: 80, dy: 0, jump: 16, grav: 0.7, jumpsLeft: 2, isDucking: false };
+    const player = { x: 50, y: GROUND_Y, w: 85, h: 85, dy: 0, jump: 17, grav: 0.75, jumpsLeft: 2, isDucking: false };
     let obstacles = [];
-    let items = [];
 
     function initGame(job) {
         state.job = job; state.active = true;
         document.getElementById('menu').style.display = 'none';
-        document.getElementById('hud').style.display = 'flex';
+        document.getElementById('mobile-hint').style.display = 'block';
+        document.getElementById('left-tap').style.display = 'block';
+        document.getElementById('right-tap').style.display = 'block';
         spawnLoop(); gameLoop();
     }
 
     function spawnLoop() {
         if (!state.active || state.challenges >= 20) return;
         const rand = Math.random();
-        if(rand > 0.75) {
-            // SCAM AD (Duck height)
-            obstacles.push({ x: 850, y: GROUND_Y - 60, w: 180, h: 80, type: 'scam' });
+        if(rand > 0.7) {
+            obstacles.push({ x: 850, y: GROUND_Y - 75, w: 220, h: 100, type: 'scam' });
         } else {
-            // GROUND STUFF
             const types = ['van', 'cone', 'crack', 'barricade', 'lowbid'];
             const type = types[Math.floor(Math.random() * types.length)];
-            let w = 60, h = 60, y = GROUND_Y + 20;
-            if(type === 'van') { w = 200; h = 120; y = GROUND_Y - 40; }
-            if(type === 'crack') { w = 90; h = 20; y = GROUND_Y + 60; }
+            let w = 70, h = 70, y = GROUND_Y + 15;
+            if(type === 'van') { w = 240; h = 150; y = GROUND_Y - 60; }
             obstacles.push({ x: 850, y: y, w: w, h: h, type: type });
         }
-        if(Math.random() > 0.6) items.push({ x: 900, y: GROUND_Y - 100, w: 40, h: 40, type: Math.random() > 0.5 ? 'energy' : 'coffee' });
-        
         state.challenges++;
-        document.getElementById('count').innerText = state.challenges;
-        setTimeout(spawnLoop, 1600 + Math.random() * 800);
+        setTimeout(spawnLoop, 1500 + Math.random() * 800);
     }
 
     function gameLoop() {
@@ -155,27 +139,17 @@
         player.y += player.dy;
         if (player.y > GROUND_Y) { player.y = GROUND_Y; player.dy = 0; player.jumpsLeft = 2; }
 
-        if(state.isGold && --state.goldTimer <= 0) state.isGold = false;
-
         obstacles.forEach((obs, i) => {
             obs.x -= state.speed;
             if (checkCollision(player, obs)) {
-                if(state.isGold) obstacles.splice(i, 1);
-                else { state.active = false; document.getElementById('lose-screen').style.display = 'flex'; }
+                state.active = false; document.getElementById('lose-screen').style.display = 'flex';
             }
         });
 
-        items.forEach((it, i) => {
-            it.x -= state.speed;
-            if (checkCollision(player, it)) { state.isGold = true; state.goldTimer = 300; items.splice(i, 1); }
-        });
-
         if (state.challenges >= 20) {
-            state.speed = 5;
             state.houseX -= state.speed;
-            if (player.x + player.w > state.houseX + 100) { 
-                state.active = false; 
-                document.getElementById('win-screen').style.display = 'flex'; 
+            if (player.x + player.w > state.houseX + 150) { 
+                state.active = false; document.getElementById('win-screen').style.display = 'flex'; 
             }
         }
     }
@@ -183,45 +157,34 @@
     function draw() {
         ctx.clearRect(0, 0, 800, 450);
         if(assets.bg.complete) ctx.drawImage(assets.bg, 0, 0, 800, 450);
+        if (state.challenges >= 20 && assets.house.complete) ctx.drawImage(assets.house, state.houseX, 50, 400, 400);
 
-        if (state.challenges >= 20 && assets.house.complete) {
-            ctx.drawImage(assets.house, state.houseX, 50, 400, 400);
-        }
-
-        const charKey = `${state.job}_${state.isGold ? 'gold' : 'normal'}`;
+        let charKey = `${state.job}_normal`;
         let dH = player.h, dY = player.y;
         if(player.isDucking) { dH = player.h * 0.5; dY = player.y + (player.h * 0.5); }
 
         if(assets[charKey]?.complete) ctx.drawImage(assets[charKey], player.x, dY, player.w, dH);
         obstacles.forEach(o => { if(assets[o.type]?.complete) ctx.drawImage(assets[o.type], o.x, o.y, o.w, o.h); });
-        items.forEach(it => { if(assets[it.type]?.complete) ctx.drawImage(assets[it.type], it.x, it.y, it.w, it.h); });
     }
 
     function checkCollision(p, o) {
         let pH = p.isDucking ? p.h * 0.5 : p.h;
         let pY = p.isDucking ? p.y + (p.h * 0.5) : p.y;
-        return p.x + 15 < o.x + o.w && p.x + p.w - 15 > o.x && pY + 15 < o.y + o.h && pY + pH - 15 > o.y;
+        return p.x + 20 < o.x + o.w && p.x + p.w - 20 > o.x && pY + 20 < o.y + o.h && pY + pH - 20 > o.y;
     }
 
-    // TOUCH HANDLERS
-    document.getElementById('jump-btn').addEventListener('touchstart', (e) => {
+    // --- MOBILE TAP HANDLERS ---
+    document.getElementById('left-tap').addEventListener('touchstart', (e) => {
         e.preventDefault();
         if (player.jumpsLeft > 0) { player.dy = -player.jump; player.jumpsLeft--; player.isDucking = false; }
     });
-    document.getElementById('duck-btn').addEventListener('touchstart', (e) => {
+
+    document.getElementById('right-tap').addEventListener('touchstart', (e) => {
         e.preventDefault(); player.isDucking = true;
     });
-    document.getElementById('duck-btn').addEventListener('touchend', (e) => {
-        e.preventDefault(); player.isDucking = false;
-    });
 
-    // KEYBOARD FALLBACK
-    window.addEventListener('keydown', (e) => {
-        if (e.code === 'Space' && player.jumpsLeft > 0) { player.dy = -player.jump; player.jumpsLeft--; }
-        if (e.code === 'KeyS' || e.code === 'ArrowDown') player.isDucking = true;
-    });
-    window.addEventListener('keyup', (e) => {
-        if (e.code === 'KeyS' || e.code === 'ArrowDown') player.isDucking = false;
+    document.getElementById('right-tap').addEventListener('touchend', (e) => {
+        e.preventDefault(); player.isDucking = false;
     });
 </script>
 </body>
