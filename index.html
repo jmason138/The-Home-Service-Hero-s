@@ -3,37 +3,48 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>HOME SERVICE HERO: PRO EDITION</title>
+    <title>HOME SERVICE HERO</title>
     <style>
-        :root { --gold: #ffcc00; --blue: #00aaff; --red: #e31b23; }
+        :root { --gold: #ffcc00; --white: #ffffff; }
         * { box-sizing: border-box; -webkit-touch-callout: none; -webkit-user-select: none; touch-action: none; }
         body { margin: 0; background: #000; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; font-family: 'Arial Black', sans-serif; }
         
         #game-viewport { 
             position: relative; aspect-ratio: 16 / 9; width: 100vw; max-height: 100vh;
-            background: #000; overflow: hidden; border: 4px solid #333;
+            background: #000; overflow: hidden; border: 2px solid #444;
         }
 
         canvas { width: 100%; height: 100%; display: block; }
         
-        /* Branded Menu */
-        #menu { position: absolute; inset: 0; z-index: 100; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; padding-bottom: 5%; }
+        /* Start Menu Overhaul */
+        #menu { 
+            position: absolute; inset: 0; z-index: 100; 
+            display: flex; flex-direction: column; justify-content: space-between; 
+            align-items: center; padding: 20px; background: rgba(0,0,0,0.4);
+        }
         #menu-bg-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; z-index: -1; }
-        
+
+        .menu-top-logos { display: flex; gap: 30px; align-items: center; background: rgba(255,255,255,0.9); padding: 10px 25px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
+        .menu-logo { height: 50px; object-fit: contain; }
+
+        .instruction-box { 
+            background: rgba(0,0,0,0.85); border: 2px solid var(--gold); border-radius: 15px;
+            padding: 15px; color: white; text-align: center; max-width: 500px; margin-bottom: 10px;
+        }
+        .instruction-box h3 { color: var(--gold); margin: 0 0 10px 0; text-transform: uppercase; font-size: 1rem; }
+        .instruction-box p { margin: 5px 0; font-size: 0.85rem; font-family: sans-serif; line-height: 1.4; }
+
         .start-btn { 
-            padding: 12px 30px; font-size: 1.1rem; font-weight: 900; border: 3px solid var(--gold); 
-            background: rgba(0,0,0,0.85); color: var(--gold); margin: 8px; border-radius: 50px; cursor: pointer; 
+            padding: 12px 30px; font-size: 1rem; font-weight: 900; border: 3px solid var(--gold); 
+            background: #000; color: var(--gold); margin: 5px; border-radius: 50px; cursor: pointer; 
         }
 
-        /* The 5-Star Review Screen */
+        /* Win/Review Screen */
         #win-screen { 
-            position: absolute; inset: 0; background: rgba(255,255,255,0.98); 
+            position: absolute; inset: 0; background: white; 
             display: none; flex-direction: column; justify-content: center; 
             align-items: center; z-index: 101; color: #333; text-align: center; padding: 5%;
         }
-        .review-stars { width: 220px; margin: 15px 0; }
-        .win-logo { max-width: 280px; max-height: 120px; margin-bottom: 20px; object-fit: contain; }
-        .customer-text { font-family: 'Georgia', serif; font-style: italic; font-size: 1.3rem; line-height: 1.5; color: #444; margin-bottom: 25px; border-left: 5px solid var(--gold); padding-left: 15px; }
 
         #lose-screen { position: absolute; inset: 0; background: rgba(0,0,0,0.9); display: none; flex-direction: column; justify-content: center; align-items: center; z-index: 101; color: #ff3333; }
         .tap-zone { position: absolute; top: 0; height: 100%; width: 50%; z-index: 90; display: none; }
@@ -43,20 +54,32 @@
 
 <div id="game-viewport">
     <div id="menu">
-        <img id="menu-bg-img" src="menu_bg.jpg" alt="Title">
-        <div style="display:flex;">
+        <img id="menu-bg-img" src="menu_bg.jpg.jpg" alt="Title">
+        
+        <div class="menu-top-logos">
+            <img src="aQuality-logo.png" class="menu-logo">
+            <img src="lyons-horz-logo.png" class="menu-logo">
+        </div>
+
+        <div class="instruction-box">
+            <h3>Objective: Arrive at the job site!</h3>
+            <p><strong>COMPUTER:</strong> [Space/Up] to Jump | [Down] to Duck</p>
+            <p><strong>MOBILE:</strong> Tap Left Side to Jump | Hold Right Side to Duck</p>
+            <p style="color:var(--gold); font-weight:bold; margin-top:8px;">Avoid obstacles & low bids to earn a 5-Star Review!</p>
+        </div>
+
+        <div style="display:flex; padding-bottom: 20px;">
             <button class="start-btn" onclick="initGame('hvac')">A QUALITY HVAC</button>
             <button class="start-btn" onclick="initGame('roofer')">LYONS ROOFING</button>
         </div>
     </div>
 
     <div id="win-screen">
-        <img id="win-brand-logo" class="win-logo" src="">
+        <img id="win-brand-logo" style="max-width:250px; margin-bottom:20px;">
         <h2 id="win-status">SERVICE SUCCESS!</h2>
-        <div id="customer-quote" class="customer-text"></div>
-        <img src="google-stars.png" class="review-stars" alt="5 Stars">
-        <p style="font-weight:bold; color:#555;">Review posted to Google Maps!</p>
-        <button class="start-btn" style="background:#333; border-color:#333; color:white;" onclick="location.reload()">NEXT APPOINTMENT</button>
+        <div id="customer-quote" style="font-family:serif; font-style:italic; font-size:1.2rem; margin: 20px; color:#444;"></div>
+        <img src="google-stars.png" style="width:200px; margin-bottom:10px;">
+        <button class="start-btn" style="background:#333; color:white; border-color:#333;" onclick="location.reload()">NEXT JOB</button>
     </div>
 
     <div id="lose-screen"><h1>BID REJECTED</h1><button class="start-btn" onclick="location.reload()">TRY AGAIN</button></div>
@@ -78,9 +101,8 @@
         bg: 'game_bg.jpg', hvac_normal: 'hvac_normal.png', roofer_normal: 'roofer_normal.png',
         van: 'van.png', cone: 'obstacle_cone.png', crack: 'obstacle_crack.png',
         barricade: 'obstacle_barricade.png', lowbid: 'obstacle_lowbid.png',
-        scam: 'scam_ad.png', house: 'menu_bg.jpg',
-        logo_hvac: 'aQuality-logo.png', logo_roof: 'lyons-horz-logo.png',
-        stars: 'google-stars.png'
+        scam: 'scam_ad.png', house: 'menu_bg.jpg.jpg',
+        logo_hvac: 'aQuality-logo.png', logo_roof: 'lyons-horz-logo.png'
     };
 
     Object.keys(sources).forEach(key => { assets[key] = new Image(); assets[key].src = sources[key]; });
@@ -134,30 +156,25 @@
 
     function finishJob() {
         state.active = false;
-        const winScreen = document.getElementById('win-screen');
         const logo = document.getElementById('win-brand-logo');
         const quote = document.getElementById('customer-quote');
-        const status = document.getElementById('win-status');
-
         if(state.job === 'hvac') {
             logo.src = 'aQuality-logo.png';
-            status.innerText = "A QUALITY REPAIR COMPLETE!";
-            quote.innerHTML = "“My AC went out in 110-degree weather! <strong>A Quality HVAC</strong> arrived within the hour and had us cool again. Professional and honest—posting a 5-star review now!”";
+            quote.innerHTML = "“A Quality HVAC was fast and professional. Our house is cool again!”";
         } else {
             logo.src = 'lyons-horz-logo.png';
-            status.innerText = "LYONS ROOFING INSTALL COMPLETE!";
-            quote.innerHTML = "“After the storm, we were worried about leaks. <strong>Lyons Roofing</strong> was incredible! Best crew in the business. They deserve every bit of this 5-star review!”";
+            quote.innerHTML = "“Lyons Roofing did an amazing job. No more leaks! Best in town.”";
         }
-        winScreen.style.display = 'flex';
+        document.getElementById('win-screen').style.display = 'flex';
     }
 
     function draw() {
         ctx.clearRect(0, 0, 800, 450);
         if(assets.bg.complete) ctx.drawImage(assets.bg, 0, 0, 800, 450);
         
-        // Branded HUD Logo
+        // Branded Logo: Bottom Left, Half Size (~75px wide)
         const hudLogo = state.job === 'hvac' ? assets.logo_hvac : assets.logo_roof;
-        if(hudLogo?.complete) ctx.drawImage(hudLogo, 620, 20, 150, 70);
+        if(hudLogo?.complete) ctx.drawImage(hudLogo, 20, 380, 75, 45);
 
         if (state.challenges >= 20 && assets.house.complete) ctx.drawImage(assets.house, state.houseX, 50, 400, 400);
 
@@ -172,13 +189,12 @@
         return p.x + 25 < o.x + o.w && p.x + p.w - 25 > o.x && p.y + 20 < o.y + o.h && p.y + pH - 20 > o.y;
     }
 
-    // Input
+    // Input Logic
     window.addEventListener('keydown', (e) => {
         if ((e.code === 'Space' || e.code === 'ArrowUp') && player.jumpsLeft > 0) { player.dy = -player.jump; player.jumpsLeft--; }
         if (e.code === 'ArrowDown') player.isDucking = true;
     });
     window.addEventListener('keyup', (e) => { if (e.code === 'ArrowDown') player.isDucking = false; });
-    
     document.getElementById('left-tap').addEventListener('touchstart', (e) => { e.preventDefault(); if (player.jumpsLeft > 0) { player.dy = -player.jump; player.jumpsLeft--; } });
     document.getElementById('right-tap').addEventListener('touchstart', (e) => { e.preventDefault(); player.isDucking = true; });
     document.getElementById('right-tap').addEventListener('touchend', (e) => { e.preventDefault(); player.isDucking = false; });
