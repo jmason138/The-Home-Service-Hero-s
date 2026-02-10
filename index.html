@@ -1,0 +1,101 @@
+body { 
+    text-align: center; 
+    background: #1a1a1a; 
+    color: white; 
+    font-family: 'Arial Black', sans-serif; 
+    overflow: hidden; 
+    margin: 0; 
+    touch-action: manipulation; 
+}
+
+#main-title { 
+    color: #ffcc00; 
+    font-size: clamp(24px, 8vw, 48px); 
+    margin: 20px 0; 
+    text-transform: uppercase; 
+    text-shadow: 4px 4px 0px #000;
+}
+
+#menu { margin-bottom: 20px; z-index: 10; position: relative; }
+
+.btn-container { display: flex; justify-content: center; gap: 20px; flex-wrap: wrap; padding: 0 10px; }
+
+.job-btn { 
+    padding: 20px 30px; 
+    font-size: 18px; 
+    cursor: pointer; 
+    border: 4px solid #ffffff; 
+    border-radius: 15px; 
+    font-weight: bold; 
+    color: white; 
+    box-shadow: 0 8px #000; 
+    width: 280px;
+    display: flex; 
+    flex-direction: column; 
+    align-items: center; 
+    gap: 10px;
+    transition: transform 0.1s;
+}
+
+.hvac-btn { background: #27ae60; }
+.roof-btn { background: #e74c3c; }
+
+.job-btn:active { transform: translateY(4px); box-shadow: 0 4px #000; }
+
+.controls-hint { 
+    color: #fff; font-size: 14px; margin-top: 15px; 
+    background: rgba(0,0,0,0.4); padding: 8px 20px; border-radius: 50px;
+}
+
+#game-wrap { 
+    position: relative; 
+    width: 95vw; max-width: 800px; 
+    height: 60vh; max-height: 450px; 
+    margin: 0 auto; 
+    border: 6px solid #ffcc00; 
+    border-radius: 20px; 
+    overflow: hidden; 
+    background: #87ceeb; 
+    display: none; 
+}
+
+canvas { width: 100%; height: 100%; }
+
+/* HUD & UI */
+#hud { position: absolute; top: 15px; left: 15px; right: 15px; display: flex; justify-content: space-between; }
+
+.pill { 
+    background: white; color: black; padding: 5px 12px; 
+    border-radius: 20px; border: 2px solid #ffcc00; font-size: 12px; 
+    display: flex; align-items: center; gap: 5px; font-weight: 900;
+}
+
+.pill span { background: #ffcc00; padding: 1px 5px; border-radius: 5px; font-size: 9px; }
+
+#sat-card { 
+    position: absolute; bottom: 20px; right: 20px; 
+    background: white; padding: 10px; border-radius: 12px; 
+    border: 2px solid #ccc; width: 150px; 
+}
+
+.sat-label { color: black; font-size: 10px; font-weight: 900; text-align: left; margin-bottom: 4px; }
+
+.bar-bg { width: 100%; height: 10px; background: #eee; border: 1.5px solid #333; border-radius: 10px; overflow: hidden; }
+
+#bar-fill { width: 100%; height: 100%; background: linear-gradient(to right, #e74c3c, #2ecc71); }
+
+#gameOver { 
+    display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
+    background: rgba(30, 0, 0, 0.98); z-index: 100; flex-direction: column; 
+    justify-content: center; align-items: center; 
+}
+
+#fail-title { color: #ff3333; font-size: clamp(24px, 10vw, 50px); }
+
+#fail-msg { font-size: 16px; color: white; margin: 20px 0; padding: 0 40px; line-height: 1.5; }
+
+#retry-btn { 
+    background: #ffcc00; color: black; border: 4px solid white; 
+    padding: 15px 50px; font-size: 22px; border-radius: 15px; font-weight: 900; 
+}
+
