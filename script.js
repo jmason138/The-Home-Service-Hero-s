@@ -5,8 +5,8 @@ const ctx = canvas.getContext('2d');
 let score = 0;
 let gameActive = false;
 let isGold = false;
-let selectedJob = 'hvac'; // Default
-let gameSpeed = 5;
+let selectedJob = 'hvac'; // Set to 'roofer' to change character
+let gameSpeed = 6;
 
 // --- IMAGE LOADER ---
 const images = {};
@@ -25,65 +25,66 @@ const imageSources = {
     bg: 'game_bg.jpg'
 };
 
-// Load all images
 Object.keys(imageSources).forEach(key => {
     images[key] = new Image();
     images[key].src = imageSources[key];
 });
 
-// --- PLAYER OBJECT ---
+// --- PLAYER OBJECT (Positioned for Left-Facing Hero) ---
 const player = {
-    x: 50,
-    y: 300,
-    w: 80,
-    h: 80,
+    x: 650,        // Placed on the right side
+    y: 380,        // Adjusted to sit on the asphalt road
+    w: 110,        // Size of your PNG
+    h: 110,
     dy: 0,
-    jumpForce: 15,
+    jumpForce: 16,
     gravity: 0.8,
     grounded: false
 };
 
-// --- ARRAYS FOR ITEMS ---
 let obstacles = [];
 let collectibles = [];
 
-// --- SPAWN LOGIC ---
+// --- SPAWN LOGIC (Coming from the LEFT) ---
 function spawnObstacle() {
     const types = ['van', 'cone', 'crack', 'barricade', 'lowbid'];
     const type = types[Math.floor(Math.random() * types.length)];
-    let w = 60, h = 60;
+    let w = 70, h = 70;
     
-    if(type === 'van') { w = 120; h = 90; } // Vans are bigger
-    if(type === 'crack') { w = 80; h = 20; } // Cracks are flat
+    if(type === 'van') { w = 150; h = 100; }
+    if(type === 'crack') { w = 100; h = 30; }
 
-    obstacles.push({ x: canvas.width, y: 380 - h, w, h, type });
+    // Start at x: -200 so they slide in from the left side
+    obstacles.push({ x: -200, y: 480 - h, w, h, type });
 }
 
 // --- CORE GAME LOOP ---
 function update() {
     if (!gameActive) return;
 
-    // Player Gravity
+    // Gravity
     player.dy += player.gravity;
     player.y += player.dy;
 
-    if (player.y > 300) {
-        player.y = 300;
+    // Ground Collision (Road level)
+    if (player.y > 380) {
+        player.y = 380;
         player.dy = 0;
         player.grounded = true;
     }
 
-    // Move Obstacles
+    // Move Obstacles (They move RIGHT now)
     obstacles.forEach((obs, index) => {
-        obs.x -= gameSpeed;
+        obs.x += gameSpeed; // Positive speed moves them toward the hero
+
         // Collision Detection
         if (player.x < obs.x + obs.w && player.x + player.w > obs.x &&
             player.y < obs.y + obs.h && player.y + player.h > obs.y) {
-            if (!isGold) {
-                gameOver();
-            }
+            if (!isGold) gameOver();
         }
-        if (obs.x + obs.w < 0) obstacles.splice(index, 1);
+
+        // Remove if they go off the right side
+        if (obs.x > canvas.width) obstacles.splice(index, 1);
     });
 
     draw();
@@ -95,21 +96,31 @@ function draw() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     // 1. Draw Background
-    ctx.drawImage(images.bg, 0, 0, canvas.width, canvas.height);
+    if (images.bg.complete) {
+        ctx.drawImage(images.bg, 0, 0, canvas.width, canvas.height);
+    }
 
-    // 2. Draw Player (Logic for Normal vs Gold)
+    // 2. Draw Player
     let charKey = `${selectedJob}_${isGold ? 'gold' : 'normal'}`;
-    ctx.drawImage(images[charKey], player.x, player.y, player.w, player.h);
+    if (images[charKey].complete) {
+        ctx.drawImage(images[charKey], player.x, player.y, player.w, player.h);
+    }
 
     // 3. Draw Obstacles
     obstacles.forEach(obs => {
-        ctx.drawImage(images[obs.type], obs.x, obs.y, obs.w, obs.h);
+        if (images[obs.type].complete) {
+            ctx.drawImage(images[obs.type], obs.x, obs.y, obs.w, obs.h);
+        }
     });
 
-    // Score
-    ctx.fillStyle = "black";
-    ctx.font = "20px Arial";
-    ctx.fillText(`Score: ${Math.floor(score++)}`, 20, 30);
+    // Score UI
+    ctx.fillStyle = "white";
+    ctx.strokeStyle = "black";
+    ctx.lineWidth = 3;
+    ctx.font = "bold 30px Arial";
+    let scoreText = `Distance: ${Math.floor(score++)}m`;
+    ctx.strokeText(scoreText, 20, 50);
+    ctx.fillText(scoreText, 20, 50);
 }
 
 // --- INPUTS ---
@@ -127,6 +138,6 @@ function gameOver() {
 }
 
 // Start Game
-setInterval(spawnObstacle, 2000);
+setInterval(spawnObstacle, 1800);
 gameActive = true;
 update();
