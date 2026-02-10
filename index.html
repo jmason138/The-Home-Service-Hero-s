@@ -16,31 +16,24 @@
 
         canvas { width: 100%; height: 100%; display: block; }
         
-        /* Menu Overhaul */
+        /* Menu Layout */
         #menu { 
             position: absolute; inset: 0; z-index: 100; 
-            display: flex; flex-direction: column; justify-content: space-between; 
-            align-items: center; padding: 20px;
+            display: flex; flex-direction: column; justify-content: flex-end; 
+            align-items: center; padding: 40px;
         }
         #menu-bg-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; z-index: -1; }
 
-        .menu-top-logos { 
-            display: flex; gap: 30px; align-items: center; 
-            background: rgba(255,255,255,0.95); padding: 10px 30px; 
-            border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.5);
-        }
-        .header-logo { height: 45px; object-fit: contain; }
-
         .instruction-box { 
             background: rgba(0,0,0,0.85); border: 2px solid var(--gold); border-radius: 15px;
-            padding: 15px; color: white; text-align: center; max-width: 500px;
+            padding: 15px; color: white; text-align: center; max-width: 500px; margin-bottom: 20px;
         }
         .instruction-box h3 { color: var(--gold); margin: 0 0 5px 0; font-size: 0.9rem; text-transform: uppercase; }
         .instruction-box p { margin: 3px 0; font-size: 0.8rem; font-family: sans-serif; }
 
         /* Branded Image Buttons */
-        .select-header { color: white; text-shadow: 2px 2px #000; margin-bottom: 5px; font-size: 1.2rem; }
-        .btn-container { display: flex; gap: 20px; padding-bottom: 30px; }
+        .select-header { color: white; text-shadow: 2px 2px #000; margin-bottom: 10px; font-size: 1.2rem; text-transform: uppercase; }
+        .btn-container { display: flex; gap: 25px; margin-bottom: 20px; }
         
         .img-btn { 
             background: white; border: 4px solid var(--gold); border-radius: 15px;
@@ -51,7 +44,7 @@
         .img-btn:hover { box-shadow: 0 0 20px var(--gold); }
         .img-btn img { max-width: 100%; max-height: 100%; object-fit: contain; }
 
-        /* Win/Lose Screens */
+        /* Screens */
         #win-screen { position: absolute; inset: 0; background: white; display: none; flex-direction: column; justify-content: center; align-items: center; z-index: 101; color: #333; text-align: center; padding: 5%; }
         #lose-screen { position: absolute; inset: 0; background: rgba(0,0,0,0.9); display: none; flex-direction: column; justify-content: center; align-items: center; z-index: 101; color: #ff3333; }
         .tap-zone { position: absolute; top: 0; height: 100%; width: 50%; z-index: 90; display: none; }
@@ -61,13 +54,8 @@
 
 <div id="game-viewport">
     <div id="menu">
-        <img id="menu-bg-img" src="menu_bg.jpg.jpg" alt="Title">
+        <img id="menu-bg-img" src="menu_bg.jpg.jpg" alt="Home Service Hero Title Screen">
         
-        <div class="menu-top-logos">
-            <img src="aQuality-logo.png" class="header-logo">
-            <img src="lyons-horz-logo.png" class="header-logo">
-        </div>
-
         <div class="instruction-box">
             <h3>Objective: Deliver Heroic Service!</h3>
             <p><strong>COMPUTER:</strong> [Space] Jump | [Down Arrow] Duck</p>
@@ -78,10 +66,10 @@
             <div class="select-header">SELECT YOUR HOME SERVICE PRO</div>
             <div class="btn-container">
                 <button class="img-btn" onclick="initGame('hvac')">
-                    <img src="aQuality-logo.png" alt="A Quality HVAC">
+                    <img src="aQuality-logo.png" alt="Select A Quality HVAC">
                 </button>
                 <button class="img-btn" onclick="initGame('roofer')">
-                    <img src="lyons-horz-logo.png" alt="Lyons Roofing">
+                    <img src="lyons-horz-logo.png" alt="Select Lyons Roofing">
                 </button>
             </div>
         </div>
@@ -197,8 +185,11 @@
     function draw() {
         ctx.clearRect(0, 0, 800, 450);
         if(assets.bg.complete) ctx.drawImage(assets.bg, 0, 0, 800, 450);
+        
+        // HUD Logo: Bottom Left during gameplay
         const hudLogo = state.job === 'hvac' ? assets.logo_hvac : assets.logo_roof;
         if(hudLogo?.complete) ctx.drawImage(hudLogo, 20, 395, 65, 35);
+
         if (state.challenges >= 20 && assets.house.complete) ctx.drawImage(assets.house, state.houseX, 50, 400, 400);
 
         let charKey = `${state.job}_normal`;
@@ -212,7 +203,7 @@
         return p.x + 25 < o.x + o.w && p.x + p.w - 25 > o.x && p.y + 20 < o.y + o.h && p.y + pH - 20 > o.y;
     }
 
-    // Input Logic with WAV sounds
+    // Input Logic
     window.addEventListener('keydown', (e) => {
         if ((e.code === 'Space' || e.code === 'ArrowUp') && player.jumpsLeft > 0) { 
             player.dy = -player.jump; player.jumpsLeft--; 
