@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Home Service Hero</title>
     <link rel="stylesheet" href="styles.css">
 </head>
@@ -11,30 +11,29 @@
     <div id="ui-layer">
         <div id="start-menu">
             <h1 id="game-title">HOME SERVICE HERO</h1>
-            <div id="best-tag">🏆 HIGH SCORE: <span id="best-ui">0</span></div>
+            <div id="best-tag">🏆 BEST: <span id="best-ui">0</span></div>
             
             <div class="selector-container">
                 <button class="job-btn hvac" onclick="startGame('hvac')">
-                    <b>QUALITY HVAC PRO</b>
+                    <b>HVAC PRO</b>
                     <span>🔧</span>
                 </button>
                 <button class="job-btn roof" onclick="startGame('roof')">
-                    <b>LYONS ROOFING PRO</b>
+                    <b>ROOFING PRO</b>
                     <span>🔨</span>
                 </button>
             </div>
-            <p class="controls-guide">Press <b>SPACE</b> to Jump & <b>DOWN ARROW</b> to Duck</p>
+            <p class="controls-guide"><b>SPACE</b>: Jump | <b>DOWN</b>: Duck</p>
         </div>
 
         <div id="hud" style="display: none;">
             <div class="stat">REFERRALS: <span id="score-ui">0</span></div>
-            <div class="stat">SPEED: <span id="speed-ui">1.0</span>x</div>
+            <div class="stat">LVL: <span id="lvl-ui">1</span></div>
         </div>
 
         <div id="game-over" style="display: none;">
-            <h1>OUTBID!</h1>
-            <p id="final-stats"></p>
-            <button class="retry-btn" onclick="location.reload()">RESTART MISSION</button>
+            <h1 style="color: #ff4444;">OUTBID!</h1>
+            <button class="retry-btn" onclick="location.reload()">RETRY MISSION</button>
         </div>
     </div>
 
