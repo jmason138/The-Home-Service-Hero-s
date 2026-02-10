@@ -3,37 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HOME SERVICE HERO: PRO EDITION</title>
+    <title>THE HOME SERVICE HERO: PRO</title>
     <style>
-        /* --- PROFESSIONAL UI STYLING --- */
-        :root { --hero-gold: #ffcc00; --neon-blue: #00f2ff; }
+        :root { --gold: #ffcc00; --cyan: #00f2ff; }
         body { margin: 0; background: #000; display: flex; justify-content: center; align-items: center; height: 100vh; color: white; font-family: 'Arial Black', sans-serif; overflow: hidden; }
-        
-        #game-viewport { 
-            position: relative; width: 800px; height: 600px; 
-            border: 4px solid #333; background: #111; overflow: hidden; 
-            box-shadow: 0 0 50px rgba(0,0,0,1), 0 0 20px rgba(255, 204, 0, 0.2); 
-        }
-
-        #menu { 
-            position: absolute; inset: 0; 
-            background: radial-gradient(circle, #222, #000); 
-            display: flex; flex-direction: column; justify-content: center; align-items: center; 
-            z-index: 100; text-align: center; 
-        }
-
-        h1 { font-size: 4rem; margin: 0; color: var(--hero-gold); text-shadow: 3px 3px 0 #000; }
-        .subtitle { color: var(--neon-blue); letter-spacing: 5px; margin-bottom: 30px; text-transform: uppercase; }
-        
-        .btn-group { display: flex; gap: 20px; }
-        button { 
-            padding: 20px 40px; font-size: 1.2rem; font-weight: 900; cursor: pointer; 
-            border: 3px solid var(--hero-gold); background: transparent; color: var(--hero-gold); 
-            text-transform: uppercase; transition: 0.2s; 
-        }
-        button:hover { background: var(--hero-gold); color: #000; box-shadow: 0 0 25px var(--hero-gold); transform: scale(1.05); }
-        
-        .hud { position: absolute; top: 20px; left: 20px; font-size: 1.5rem; pointer-events: none; z-index: 5; }
+        #game-viewport { position: relative; width: 800px; height: 600px; border: 4px solid #333; background: #111; box-shadow: 0 0 50px #000; }
+        #menu { position: absolute; inset: 0; background: radial-gradient(circle, #222, #000); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 100; text-align: center; }
+        h1 { font-size: 4rem; margin: 0; color: var(--gold); text-shadow: 3px 3px 0 #000; }
+        .subtitle { color: var(--cyan); letter-spacing: 5px; margin-bottom: 30px; text-transform: uppercase; }
+        .btn-group { display: none; gap: 20px; } /* Hidden until loaded */
+        #loader-text { color: var(--gold); font-size: 1.2rem; margin-bottom: 20px; }
+        button { padding: 20px 40px; font-size: 1.2rem; font-weight: 900; cursor: pointer; border: 3px solid var(--gold); background: transparent; color: var(--gold); text-transform: uppercase; transition: 0.2s; }
+        button:hover { background: var(--gold); color: #000; box-shadow: 0 0 20px var(--gold); }
     </style>
 </head>
 <body>
@@ -42,57 +23,61 @@
     <div id="menu">
         <h1>HOME SERVICE HERO</h1>
         <div class="subtitle">Trades At War</div>
-        <div id="best-score" style="margin-bottom: 20px; font-size: 1.2rem;">RECORD: 0</div>
-        <div class="btn-group">
+        <div id="loader-text">PREPARING TRADES...</div>
+        <div class="btn-group" id="controls">
             <button onclick="initGame('hvac')">HVAC TECH</button>
             <button onclick="initGame('roofer')">ROOFER</button>
         </div>
-        <p style="color: #666; margin-top: 25px;">[SPACE] TO JUMP | COLLECT DRINKS FOR GOLD MODE</p>
     </div>
-    
-    <div class="hud" id="hud" style="display:none;">SCORE: 0</div>
     <canvas id="gameCanvas" width="800" height="600"></canvas>
 </div>
 
 <script>
-    /* --- GAME ENGINE --- */
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
     const menu = document.getElementById('menu');
-    const hud = document.getElementById('hud');
+    const loader = document.getElementById('loader-text');
+    const controls = document.getElementById('controls');
 
-    let state = { 
-        active: false, score: 0, highScore: localStorage.getItem('heroHS') || 0, 
-        speed: 8, isGold: false, goldTimer: 0, job: 'hvac' 
-    };
+    let state = { active: false, score: 0, speed: 8, isGold: false, goldTimer: 0, job: 'hvac' };
 
-    document.getElementById('best-score').innerText = `RECORD: ${Math.floor(state.highScore)}`;
-
-    // Asset Map - using your exact file names from the screenshot
+    // --- PRO IMAGE LOADING SYSTEM ---
     const assets = {};
     const sources = {
-        bg: 'game_bg.jpg',
-        hvac_normal: 'hvac_normal.png', hvac_gold: 'hvac_gold.png',
-        roofer_normal: 'roofer_normal.png', roofer_gold: 'roofer_gold.png',
-        van: 'van.png', cone: 'obstacle_cone.png', crack: 'obstacle_crack.png',
-        barricade: 'obstacle_barricade.png', lowbid: 'obstacle_lowbid.png',
-        energy: 'energy_drink.png'
+        bg: './game_bg.jpg',
+        hvac_normal: './hvac_normal.png', hvac_gold: './hvac_gold.png',
+        roofer_normal: './roofer_normal.png', roofer_gold: './roofer_gold.png',
+        van: './van.png', cone: './obstacle_cone.png', crack: './obstacle_crack.png',
+        barricade: './obstacle_barricade.png', lowbid: './obstacle_lowbid.png',
+        energy: './energy_drink.png'
     };
+
+    let loadedCount = 0;
+    const totalAssets = Object.keys(sources).length;
 
     Object.keys(sources).forEach(key => {
         assets[key] = new Image();
         assets[key].src = sources[key];
+        assets[key].onload = () => {
+            loadedCount++;
+            if (loadedCount >= totalAssets) {
+                loader.style.display = 'none';
+                controls.style.display = 'flex';
+            }
+        };
+        assets[key].onerror = () => {
+            console.error("Failed to load: " + key);
+            loadedCount++; // Still increment to unblock the game
+        };
     });
 
-    const player = { x: 600, y: 435, w: 100, h: 100, dy: 0, jump: 18, grav: 0.85, grounded: false };
+    const player = { x: 620, y: 435, w: 100, h: 100, dy: 0, jump: 18, grav: 0.85, grounded: false };
     let obstacles = [];
     let items = [];
 
     function initGame(job) {
-        state.job = job; state.active = true; state.score = 0; state.speed = 8.5;
-        obstacles = []; items = [];
+        state.job = job; state.active = true;
         menu.style.display = 'none';
-        hud.style.display = 'block';
         spawnLoop();
         gameLoop();
     }
@@ -101,18 +86,10 @@
         if (!state.active) return;
         const types = ['van', 'cone', 'crack', 'barricade', 'lowbid'];
         const type = types[Math.floor(Math.random() * types.length)];
-        
-        let w = 70, h = 70;
-        if(type === 'van') { w = 170; h = 100; }
-        if(type === 'crack') { w = 100; h = 25; }
-
+        let w = 80, h = 80;
+        if(type === 'van') { w = 180; h = 110; }
         obstacles.push({ x: -200, y: 535 - h, w, h, type });
-
-        if(Math.random() > 0.8) {
-            items.push({ x: -100, y: 320, w: 50, h: 50, type: 'energy' });
-        }
-
-        setTimeout(spawnLoop, Math.max(800, 2200 - (state.speed * 40)));
+        setTimeout(spawnLoop, 2000);
     }
 
     function gameLoop() {
@@ -125,72 +102,37 @@
     function update() {
         player.dy += player.grav;
         player.y += player.dy;
-        state.speed += 0.002;
-
         if (player.y > 435) { player.y = 435; player.dy = 0; player.grounded = true; }
-
-        if (state.isGold) {
-            state.goldTimer--;
-            if (state.goldTimer <= 0) state.isGold = false;
-        }
 
         obstacles.forEach((obs, i) => {
             obs.x += state.speed;
-            if (checkCollision(player, obs)) {
-                if (state.isGold) obstacles.splice(i, 1);
-                else endGame();
-            }
+            if (checkCollision(player, obs)) location.reload();
             if (obs.x > 850) obstacles.splice(i, 1);
         });
-
-        items.forEach((item, i) => {
-            item.x += state.speed;
-            if (checkCollision(player, item)) {
-                state.isGold = true; state.goldTimer = 300; items.splice(i, 1);
-            }
-        });
-
         state.score += 0.1;
-        hud.innerText = `SCORE: ${Math.floor(state.score)}`;
     }
 
     function checkCollision(p, o) {
-        const b = 25; // Pro hitbox padding
-        return p.x + b < o.x + o.w && p.x + p.w - b > o.x && p.y + b < o.y + o.h && p.y + p.h - b > o.y;
+        return p.x < o.x + o.w - 20 && p.x + p.w > o.x + 20 && p.y < o.y + o.h - 10 && p.y + p.h > o.y + 10;
     }
 
     function draw() {
         ctx.clearRect(0, 0, 800, 600);
+        // Draw Background
+        if(assets.bg.complete) ctx.drawImage(assets.bg, 0, 0, 800, 600);
         
-        // Draw BG
-        if(assets.bg.complete && assets.bg.naturalWidth > 0) ctx.drawImage(assets.bg, 0, 0, 800, 600);
-        else { ctx.fillStyle = '#222'; ctx.fillRect(0,0,800,600); }
-
         // Draw Player
-        const key = `${state.job}_${state.isGold ? 'gold' : 'normal'}`;
-        if(assets[key].complete && assets[key].naturalWidth > 0) {
-            ctx.drawImage(assets[key], player.x, player.y, player.w, player.h);
-        } else {
-            ctx.fillStyle = state.isGold ? 'gold' : 'cyan'; ctx.fillRect(player.x, player.y, player.w, player.h);
-        }
+        const key = `${state.job}_normal`;
+        if(assets[key].complete) ctx.drawImage(assets[key], player.x, player.y, player.w, player.h);
 
         // Draw Obstacles
         obstacles.forEach(o => {
-            if(assets[o.type] && assets[o.type].complete) ctx.drawImage(assets[o.type], o.x, o.y, o.w, o.h);
-            else { ctx.fillStyle = 'red'; ctx.fillRect(o.x, o.y, o.w, o.h); }
+            if(assets[o.type].complete) ctx.drawImage(assets[o.type], o.x, o.y, o.w, o.h);
         });
 
-        // Draw Items
-        items.forEach(it => {
-            if(assets.energy.complete) ctx.drawImage(assets.energy, it.x, it.y, it.w, it.h);
-        });
-    }
-
-    function endGame() {
-        state.active = false;
-        if (state.score > state.highScore) localStorage.setItem('heroHS', state.score);
-        alert(`JOB OVER!\nSCORE: ${Math.floor(state.score)}`);
-        location.reload();
+        ctx.fillStyle = "white";
+        ctx.font = "bold 24px Arial";
+        ctx.fillText(`SCORE: ${Math.floor(state.score)}`, 20, 40);
     }
 
     window.addEventListener('keydown', (e) => {
