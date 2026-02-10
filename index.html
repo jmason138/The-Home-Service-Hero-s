@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HOME SERVICE HERO: THE BID WAR</title>
+    <title>HOME SERVICE HERO: PRO EDITION</title>
     <style>
         :root { --gold: #ffcc00; --cyan: #00f2ff; --red: #ff3333; }
         body { margin: 0; background: #000; display: flex; justify-content: center; align-items: center; height: 100vh; color: white; font-family: 'Arial Black', sans-serif; overflow: hidden; }
@@ -13,13 +13,10 @@
         #win-screen, #lose-screen { display: none; }
         
         h1 { font-size: 3rem; margin: 0; color: var(--gold); }
-        .lose-h1 { color: var(--red); font-size: 2.5rem; }
         .message { font-size: 1.1rem; line-height: 1.4; margin: 20px 0; color: #ddd; max-width: 600px; }
         
         button { padding: 15px 30px; font-size: 1.1rem; font-weight: 900; cursor: pointer; border: 3px solid var(--gold); background: transparent; color: var(--gold); text-transform: uppercase; margin: 10px; transition: 0.2s; }
         button:hover { background: var(--gold); color: #000; }
-        .btn-red { border-color: var(--red); color: var(--red); }
-        .btn-red:hover { background: var(--red); color: #fff; }
 
         .hud { position: absolute; top: 20px; width: 100%; display: flex; justify-content: space-around; font-size: 1.2rem; pointer-events: none; z-index: 10; }
     </style>
@@ -29,26 +26,16 @@
 <div id="game-viewport">
     <div id="menu">
         <h1>HOME SERVICE HERO</h1>
-        <p class="message">Don't let the "Chuck-in-a-Truck" low-bid competitors ruin the industry. Reach the house for a quality install!</p>
+        <p class="message">JUMP over the Low-Bidders. DUCK under the Scam Ads!<br>[SPACE] to Jump (twice for Double) | [S] or [DOWN] to Duck</p>
         <button onclick="initGame('hvac')">HVAC TECH</button>
         <button onclick="initGame('roofer')">ROOFER</button>
     </div>
 
-    <div id="win-screen">
-        <h1>INSTALL COMPLETE!</h1>
-        <p class="message" id="win-sub"></p>
-        <button onclick="location.reload()">NEXT CUSTOMER</button>
-    </div>
-
-    <div id="lose-screen">
-        <h1 class="lose-h1">BID LOST!</h1>
-        <p class="message">The customer chose the cheaper bid, but <b>they lose in the end</b>. The competitor's poor quality service and low pricing will leave the customer with a mess!</p>
-        <button class="btn-red" onclick="location.reload()">TRY TO SAVE THEM (REPLAY)</button>
-    </div>
+    <div id="win-screen"><h1>INSTALL COMPLETE!</h1><button onclick="location.reload()">NEXT JOB</button></div>
+    <div id="lose-screen"><h1 style="color:var(--red)">BID LOST!</h1><p class="message">The customer fell for a scam. Try again to save them!</p><button onclick="location.reload()">RE-BID</button></div>
 
     <div class="hud" id="hud" style="display:none;">
         <div>CHALLENGES: <span id="count">0</span> / 20</div>
-        <div id="status" style="color:var(--gold); font-weight:bold;"></div>
     </div>
 
     <canvas id="gameCanvas" width="800" height="600"></canvas>
@@ -58,144 +45,124 @@
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
     
-    let state = { active: false, job: 'hvac', challenges: 0, speed: 7, isGold: false, goldTimer: 0, houseX: 1200 };
+    let state = { active: false, job: 'hvac', challenges: 0, speed: 8, isGold: false, houseX: 1500 };
 
     const assets = {};
     const sources = {
         bg: 'game_bg.jpg',
-        hvac_normal: 'hvac_normal.png', hvac_gold: 'hvac_gold.png',
-        roofer_normal: 'roofer_normal.png', roofer_gold: 'roofer_gold.png',
-        van: 'van.png', cone: 'obstacle_cone.png', crack: 'obstacle_crack.png',
-        barricade: 'obstacle_barricade.png', lowbid: 'obstacle_lowbid.png',
-        energy: 'energy_drink.png', coffee: 'coffee.png', house: 'menu_bg.jpg'
+        hvac: 'hvac_normal.png',
+        roofer: 'roofer_normal.png',
+        van: 'van.png',
+        scam: 'scam_ad.png',
+        house: 'menu_bg.jpg'
     };
 
     Object.keys(sources).forEach(key => { assets[key] = new Image(); assets[key].src = sources[key]; });
 
-    const player = { x: 50, y: 435, w: 100, h: 100, dy: 0, jump: 18, grav: 0.8, grounded: false };
+    const player = { x: 50, y: 435, w: 100, h: 100, dy: 0, jump: 17, grav: 0.8, grounded: false, jumpsLeft: 2, isDucking: false };
     let obstacles = [];
-    let items = [];
 
     function initGame(job) {
-        state.job = job;
-        state.active = true;
+        state.job = job; state.active = true;
         document.getElementById('menu').style.display = 'none';
         document.getElementById('hud').style.display = 'flex';
-        spawnLoop();
-        gameLoop();
+        spawnLoop(); gameLoop();
     }
 
     function spawnLoop() {
         if (!state.active || state.challenges >= 20) return;
         
-        // Randomize Obstacle Type
-        const types = ['van', 'cone', 'crack', 'barricade', 'lowbid'];
-        const type = types[Math.floor(Math.random() * types.length)];
-        let w = 80, h = 80, y = 450;
-        
-        if(type === 'van') { w = 170; h = 100; y = 430; }
-        if(type === 'crack') { w = 110; h = 30; y = 500; }
-        
-        obstacles.push({ x: 850, y: y, w: w, h: h, type: type });
-
-        // Randomly spawn coffee or energy drink
-        if(Math.random() > 0.6) {
-            const itemType = Math.random() > 0.5 ? 'energy' : 'coffee';
-            items.push({ x: 900, y: 320, w: 50, h: 50, type: itemType });
+        // Randomly spawn a High Scam Ad or a Low Competitor
+        const isHigh = Math.random() > 0.6;
+        if(isHigh) {
+            // HIGH SCAM AD (Duck under this)
+            obstacles.push({ x: 850, y: 300, w: 150, h: 100, type: 'scam' });
+        } else {
+            // LOW COMPETITOR (Jump over this)
+            obstacles.push({ x: 850, y: 450, w: 140, h: 90, type: 'van' });
         }
 
         state.challenges++;
         document.getElementById('count').innerText = state.challenges;
-        setTimeout(spawnLoop, 1500 + Math.random() * 1000);
+        setTimeout(spawnLoop, 1500 + Math.random() * 800);
     }
 
     function gameLoop() {
         if (!state.active) return;
-        update();
-        draw();
+        update(); draw();
         requestAnimationFrame(gameLoop);
     }
 
     function update() {
         player.dy += player.grav;
         player.y += player.dy;
-        if (player.y > 435) { player.y = 435; player.dy = 0; player.grounded = true; }
 
-        if(state.isGold) {
-            state.goldTimer--;
-            if(state.goldTimer <= 0) {
-                state.isGold = false;
-                document.getElementById('status').innerText = "";
-            }
+        // Ground Logic
+        if (player.y > 435) { 
+            player.y = 435; player.dy = 0; player.grounded = true; player.jumpsLeft = 2; 
         }
 
+        // Move Obstacles
         obstacles.forEach((obs, i) => {
             obs.x -= state.speed;
             if (checkCollision(player, obs)) {
-                if(state.isGold) obstacles.splice(i, 1);
-                else triggerLose();
-            }
-        });
-
-        items.forEach((it, i) => {
-            it.x -= state.speed;
-            if (checkCollision(player, it)) {
-                state.isGold = true;
-                state.goldTimer = 300;
-                document.getElementById('status').innerText = "GOLD MODE!";
-                items.splice(i, 1);
+                state.active = false;
+                document.getElementById('lose-screen').style.display = 'flex';
             }
         });
 
         if (state.challenges >= 20) {
             state.houseX -= state.speed;
-            if (player.x + player.w > state.houseX + 50) triggerWin();
+            if (player.x + player.w > state.houseX + 50) {
+                state.active = false;
+                document.getElementById('win-screen').style.display = 'flex';
+            }
         }
     }
 
     function draw() {
         ctx.clearRect(0, 0, 800, 600);
         if(assets.bg.complete) ctx.drawImage(assets.bg, 0, 0, 800, 600);
+        if (state.challenges >= 20 && assets.house.complete) ctx.drawImage(assets.house, state.houseX, 200, 350, 350);
 
-        if (state.challenges >= 20 && assets.house.complete) {
-            ctx.drawImage(assets.house, state.houseX, 200, 350, 350);
+        // Player Drawing
+        const pImg = state.job === 'hvac' ? assets.hvac : assets.roofer;
+        let drawH = player.h;
+        let drawY = player.y;
+
+        if(player.isDucking && player.grounded) {
+            drawH = player.h * 0.5; // Visual duck
+            drawY = player.y + (player.h * 0.5);
         }
 
-        const charKey = `${state.job}_${state.isGold ? 'gold' : 'normal'}`;
-        if(assets[charKey].complete) ctx.drawImage(assets[charKey], player.x, player.y, player.w, player.h);
+        if(pImg.complete) ctx.drawImage(pImg, player.x, drawY, player.w, drawH);
 
         obstacles.forEach(o => {
             if(assets[o.type].complete) ctx.drawImage(assets[o.type], o.x, o.y, o.w, o.h);
-            // Label the low bidders
-            ctx.fillStyle = "white";
-            ctx.font = "12px Arial";
-            ctx.fillText("LOW BID", o.x + 10, o.y - 10);
-        });
-
-        items.forEach(it => {
-            if(assets[it.type].complete) ctx.drawImage(assets[it.type], it.x, it.y, it.w, it.h);
         });
     }
 
     function checkCollision(p, o) {
+        // Adjust player hitbox if ducking
+        let pH = p.isDucking && p.grounded ? p.h * 0.5 : p.h;
+        let pY = p.isDucking && p.grounded ? p.y + (p.h * 0.5) : p.y;
         const b = 25;
-        return p.x + b < o.x + o.w && p.x + p.w - b > o.x && p.y + b < o.y + o.h && p.y + p.h - b > o.y;
-    }
-
-    function triggerWin() {
-        state.active = false;
-        document.getElementById('win-screen').style.display = 'flex';
-        document.getElementById('win-sub').innerText = state.job === 'hvac' ? "Quality HVAC Install Complete!" : "New Quality Roof Installed!";
-    }
-
-    function triggerLose() {
-        state.active = false;
-        document.getElementById('lose-screen').style.display = 'flex';
+        return p.x + b < o.x + o.w && p.x + p.w - b > o.x && pY + b < o.y + o.h && pY + pH - b > o.y;
     }
 
     window.addEventListener('keydown', (e) => {
-        if (e.code === 'Space' && player.grounded) {
-            player.dy = -player.jump; player.grounded = false;
+        if (e.code === 'Space' && player.jumpsLeft > 0) {
+            player.dy = -player.jump; player.jumpsLeft--; player.grounded = false;
+            player.isDucking = false;
+        }
+        if (e.code === 'KeyS' || e.code === 'ArrowDown') {
+            player.isDucking = true;
+        }
+    });
+
+    window.addEventListener('keyup', (e) => {
+        if (e.code === 'KeyS' || e.code === 'ArrowDown') {
+            player.isDucking = false;
         }
     });
 </script>
