@@ -2,43 +2,44 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Home Service Hero</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home Service Hero: Pro Edition</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-
     <div id="ui-layer">
         <div id="start-menu">
             <h1 id="game-title">HOME SERVICE HERO</h1>
-            <div id="best-tag">🏆 BEST: <span id="best-ui">0</span></div>
+            <div id="best-tag">🏆 TOP PRO SCORE: <span id="best-ui">0</span></div>
             
             <div class="selector-container">
                 <button class="job-btn hvac" onclick="startGame('hvac')">
-                    <b>HVAC PRO</b>
-                    <span>🔧</span>
+                    <div class="btn-top">HVAC ELITE</div>
+                    <div class="btn-sub">Quality Systems</div>
+                    <span class="btn-icon">🔧</span>
                 </button>
                 <button class="job-btn roof" onclick="startGame('roof')">
-                    <b>ROOFING PRO</b>
-                    <span>🔨</span>
+                    <div class="btn-top">LYONS ROOFING</div>
+                    <div class="btn-sub">Master Shingle</div>
+                    <span class="btn-icon">🔨</span>
                 </button>
             </div>
-            <p class="controls-guide"><b>SPACE</b>: Jump | <b>DOWN</b>: Duck</p>
+            <div class="pc-hint">⌨️ SPACE: JUMP | DOWN: DUCK</div>
         </div>
 
         <div id="hud" style="display: none;">
-            <div class="stat">REFERRALS: <span id="score-ui">0</span></div>
-            <div class="stat">LVL: <span id="lvl-ui">1</span></div>
+            <div class="stat-box">⭐ REFERRALS: <span id="score-ui">0</span></div>
+            <div class="stat-box">🚀 SPEED: <span id="speed-ui">1.0</span></div>
         </div>
 
         <div id="game-over" style="display: none;">
-            <h1 style="color: #ff4444;">OUTBID!</h1>
-            <button class="retry-btn" onclick="location.reload()">RETRY MISSION</button>
+            <h1 class="glow-text">JOB LOST!</h1>
+            <p>A low-bidder stole the customer's trust.</p>
+            <button class="retry-btn" onclick="location.reload()">RESUME HUSTLE</button>
         </div>
     </div>
 
     <canvas id="gameCanvas"></canvas>
-
     <script src="script.js"></script>
 </body>
 </html>
