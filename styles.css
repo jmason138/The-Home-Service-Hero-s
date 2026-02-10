@@ -1,21 +1,34 @@
 :root { --gold: #f1c40f; }
-body, html { margin: 0; padding: 0; width: 100%; height: 100%; background: #0f172a; overflow: hidden; font-family: 'Roboto', sans-serif; }
-#ui-layer { position: absolute; inset: 0; z-index: 10; display: flex; flex-direction: column; align-items: center; justify-content: center; pointer-events: none; }
-#start-menu, #game-over, #victory-screen { pointer-events: auto; text-align: center; }
+body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; font-family: sans-serif; background: #87ceeb; }
 
-/* HUD positioning */
-#hud { position: absolute; top: 20px; left: 0; width: 100%; display: flex; justify-content: space-around; pointer-events: none; }
-.stat { background: rgba(0,0,0,0.8); padding: 12px 25px; border-radius: 10px; border-bottom: 4px solid var(--gold); color: white; font-weight: 900; font-size: 20px; }
+/* HUD fixed to top */
+#hud {
+    position: absolute; top: 0; left: 0; width: 100%;
+    display: flex; justify-content: space-between; padding: 20px;
+    box-sizing: border-box; z-index: 5; pointer-events: none;
+}
+.stat { background: rgba(0,0,0,0.7); color: white; padding: 10px 20px; border-radius: 8px; font-weight: bold; border-bottom: 3px solid var(--gold); }
 
-.hero-title { font-family: 'Bebas Neue'; font-size: 90px; color: white; margin: 0; text-shadow: 0 10px 20px #000; }
+/* Menu layers */
+#ui-layer {
+    position: absolute; inset: 0; z-index: 10;
+    display: flex; align-items: center; justify-content: center;
+}
+.menu-box {
+    background: rgba(15, 23, 42, 0.9); padding: 40px; border-radius: 20px;
+    text-align: center; color: white; box-shadow: 0 0 30px rgba(0,0,0,0.5);
+}
+.title { font-size: 50px; margin-bottom: 30px; }
 .gold { color: var(--gold); }
-.selector-container { display: flex; gap: 20px; pointer-events: auto; margin-top: 30px; }
-.card-inner { width: 220px; height: 140px; border-radius: 20px; color: white; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; box-shadow: 0 10px 0 #000; transition: 0.2s; }
-.card-inner:hover { transform: translateY(-5px); }
-.hvac { background: linear-gradient(135deg, #1e293b, #27ae60); }
-.roof { background: linear-gradient(135deg, #1e293b, #c0392b); }
 
-/* Victory Screen */
-.victory-text { font-family: 'Bebas Neue'; font-size: 100px; color: var(--gold); text-shadow: 0 0 30px rgba(241,196,15,0.8); margin: 0; animation: bounce 1s infinite; }
-@keyframes bounce { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.1); } }
-.next-btn { background: white; border: none; padding: 20px 60px; font-size: 24px; font-weight: 900; border-radius: 50px; cursor: pointer; margin-top: 20px; box-shadow: 0 8px 0 #ddd; }
+.btn-group { display: flex; gap: 20px; }
+.job-btn {
+    width: 180px; padding: 20px; border: none; border-radius: 15px;
+    cursor: pointer; color: white; font-size: 18px; transition: 0.2s;
+}
+.hvac { background: #27ae60; }
+.roof { background: #c0392b; }
+.job-btn:hover { transform: scale(1.05); }
+
+.main-btn { background: var(--gold); border: none; padding: 15px 40px; border-radius: 10px; font-weight: bold; cursor: pointer; margin-top: 20px; }
+.victory-text { color: var(--gold); font-size: 60px; }
