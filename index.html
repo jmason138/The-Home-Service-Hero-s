@@ -4,36 +4,266 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>HOME SERVICE HERO: TRADES AT WAR</title>
-    <link rel="stylesheet" href="style.css">
+    <style>
+        /* --- PRO ARCADE CSS --- */
+        :root {
+            --hero-gold: #ffcc00;
+            --neon-blue: #00f2ff;
+            --dark-bg: #0a0a0a;
+        }
+
+        body {
+            margin: 0;
+            background-color: #000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            color: white;
+            font-family: 'Arial Black', sans-serif;
+            overflow: hidden;
+        }
+
+        #game-viewport {
+            position: relative;
+            width: 800px;
+            height: 600px;
+            border: 4px solid #333;
+            background: #111;
+            box-shadow: 0 0 50px #000, 0 0 30px rgba(255, 204, 0, 0.2);
+        }
+
+        /* THE MENU OVERLAY */
+        #menu {
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(circle at center, rgba(20,20,20,0.9), rgba(0,0,0,1));
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 4.5rem;
+            margin: 0;
+            color: var(--hero-gold);
+            text-transform: uppercase;
+            letter-spacing: -2px;
+            text-shadow: 4px 4px 0px #000, 0 0 20px rgba(255, 204, 0, 0.4);
+            line-height: 0.85;
+        }
+
+        .subtitle {
+            font-size: 1.1rem;
+            color: var(--neon-blue);
+            margin-bottom: 30px;
+            letter-spacing: 5px;
+        }
+
+        .high-score {
+            font-size: 1.5rem;
+            margin-bottom: 30px;
+            background: rgba(255,255,255,0.05);
+            padding: 10px 30px;
+            border-radius: 50px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .btn-container { display: flex; gap: 20px; }
+
+        button {
+            padding: 20px 50px;
+            font-size: 1.2rem;
+            font-weight: 900;
+            cursor: pointer;
+            border: 3px solid var(--hero-gold);
+            background: transparent;
+            color: var(--hero-gold);
+            text-transform: uppercase;
+            transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        button:hover {
+            background: var(--hero-gold);
+            color: #000;
+            transform: scale(1.1) rotate(-2deg);
+            box-shadow: 0 0 25px var(--hero-gold);
+        }
+
+        canvas { display: block; image-rendering: pixelated; }
+    </style>
 </head>
 <body>
 
 <div id="game-viewport">
     <div id="menu">
-        <div class="glitch-wrapper">
-            <h1 class="glitch" data-text="HOME SERVICE HERO">HOME SERVICE HERO</h1>
-        </div>
+        <h1>HOME SERVICE<br>HERO</h1>
         <div class="subtitle">TRADES AT WAR</div>
-        
         <div id="best-score" class="high-score">RECORD: 0000</div>
         
         <div class="btn-container">
-            <button class="hero-btn" onclick="initGame('hvac')">
-                <span>HVAC TECH</span>
-            </button>
-            <button class="hero-btn" onclick="initGame('roofer')">
-                <span>ROOFER</span>
-            </button>
+            <button onclick="initGame('hvac')">HVAC TECH</button>
+            <button onclick="initGame('roofer')">ROOFER</button>
         </div>
-        
-        <div class="controls-hint">
-            <span class="key">SPACE</span> TO JUMP | <span class="key">GOLD</span> SMASHES OBSTACLES
-        </div>
+        <p style="margin-top: 30px; color: #444; font-size: 0.8rem;">[SPACE] TO JUMP | GOLD MODE SMASHES OBSTACLES</p>
     </div>
 
     <canvas id="gameCanvas" width="800" height="600"></canvas>
 </div>
 
-<script src="script.js"></script>
+<script>
+    /* --- PRO ARCADE ENGINE --- */
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+    const menu = document.getElementById('menu');
+
+    let state = {
+        active: false,
+        score: 0,
+        highScore: localStorage.getItem('heroHS') || 0,
+        speed: 8,
+        isGold: false,
+        goldTimer: 0,
+        job: 'hvac'
+    };
+
+    document.getElementById('best-score').innerText = `RECORD: ${Math.floor(state.highScore)}`;
+
+    // ASSET LOADER
+    const assets = {};
+    const sources = {
+        bg: 'game_bg.jpg',
+        hvac_normal: 'hvac_normal.png',
+        hvac_gold: 'hvac_gold.png',
+        roofer_normal: 'roofer_normal.png',
+        roofer_gold: 'roofer_gold.png',
+        van: 'van.png',
+        cone: 'obstacle_cone.png',
+        crack: 'obstacle_crack.png',
+        barricade: 'obstacle_barricade.png',
+        lowbid: 'obstacle_lowbid.png',
+        energy: 'energy_drink.png'
+    };
+
+    Object.keys(sources).forEach(key => {
+        assets[key] = new Image();
+        assets[key].src = sources[key];
+    });
+
+    const player = { x: 620, y: 435, w: 100, h: 100, dy: 0, jump: 18, grav: 0.85, grounded: false };
+    let obstacles = [];
+    let items = [];
+
+    function initGame(selectedJob) {
+        state.job = selectedJob;
+        state.active = true;
+        state.score = 0;
+        state.speed = 8.5;
+        obstacles = [];
+        items = [];
+        menu.style.display = 'none';
+        
+        requestAnimationFrame(gameLoop);
+        spawnController();
+    }
+
+    function spawnController() {
+        if (!state.active) return;
+        
+        const types = ['van', 'cone', 'crack', 'barricade', 'lowbid'];
+        const type = types[Math.floor(Math.random() * types.length)];
+        let w = 80, h = 80;
+        if(type === 'van') { w = 180; h = 110; }
+        if(type === 'crack') { w = 100; h = 25; }
+        
+        // Spawn from LEFT (since hero faces left)
+        obstacles.push({ x: -250, y: 535 - h, w, h, type });
+
+        if(Math.random() > 0.8) items.push({ x: -100, y: 320, w: 50, h: 50, type: 'energy' });
+
+        setTimeout(spawnController, Math.max(800, 2100 - (state.speed * 50)));
+    }
+
+    function gameLoop() {
+        if (!state.active) return;
+        update();
+        draw();
+        requestAnimationFrame(gameLoop);
+    }
+
+    function update() {
+        player.dy += player.grav;
+        player.y += player.dy;
+        state.speed += 0.002;
+
+        if (player.y > 435) {
+            player.y = 435; player.dy = 0; player.grounded = true;
+        }
+
+        if (state.isGold) {
+            state.goldTimer--;
+            if (state.goldTimer <= 0) state.isGold = false;
+        }
+
+        obstacles.forEach((obs, i) => {
+            obs.x += state.speed;
+            if (checkCollision(player, obs)) {
+                state.isGold ? obstacles.splice(i, 1) : die();
+            }
+            if (obs.x > 900) obstacles.splice(i, 1);
+        });
+
+        items.forEach((item, i) => {
+            item.x += state.speed;
+            if (checkCollision(player, item)) {
+                state.isGold = true; state.goldTimer = 300; items.splice(i, 1);
+            }
+        });
+
+        state.score += 0.1;
+    }
+
+    function checkCollision(p, o) {
+        const b = 20; // Fair hitbox buffer
+        return p.x + b < o.x + o.w && p.x + p.w - b > o.x &&
+               p.y + b < o.y + o.h && p.y + p.h - b > o.y;
+    }
+
+    function draw() {
+        ctx.clearRect(0, 0, 800, 600);
+        if(assets.bg.complete) ctx.drawImage(assets.bg, 0, 0, 800, 600);
+        
+        obstacles.forEach(o => {
+            if(assets[o.type].complete) ctx.drawImage(assets[o.type], o.x, o.y, o.w, o.h);
+        });
+        
+        items.forEach(it => {
+            if(assets.energy.complete) ctx.drawImage(assets.energy, it.x, it.y, it.w, it.h);
+        });
+
+        const key = `${state.job}_${state.isGold ? 'gold' : 'normal'}`;
+        if(assets[key].complete) ctx.drawImage(assets[key], player.x, player.y, player.w, player.h);
+
+        ctx.fillStyle = "white";
+        ctx.font = "900 28px Arial";
+        ctx.fillText(`SCORE: ${Math.floor(state.score)}`, 30, 50);
+    }
+
+    function die() {
+        state.active = false;
+        if (state.score > state.highScore) localStorage.setItem('heroHS', state.score);
+        alert(`GAME OVER\nSCORE: ${Math.floor(state.score)}`);
+        location.reload();
+    }
+
+    window.addEventListener('keydown', (e) => {
+        if (e.code === 'Space' && player.grounded) {
+            player.dy = -player.jump; player.grounded = false;
+        }
+    });
+</script>
 </body>
 </html>
